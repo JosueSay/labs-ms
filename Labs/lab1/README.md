@@ -5,7 +5,6 @@ Se abordaron cuatro problemas de programación lineal utilizando Julia y Excel d
 ## Entorno
 
 - Julia 1.11.6
-- IJulia
 - Jupyter Notebook
 
 ## Estructura del repositorio
