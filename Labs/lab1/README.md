@@ -1,6 +1,6 @@
 # Laboratorio 1 - Programación Lineal
 
-Se abordaron cuatro problemas de programación lineal utilizando Julia y Excel donde requería.
+Se abordaron cuatro problemas de programación lineal utilizando Julia y Excel donde requería. Para ejecutar los problemas se puede correr el archivo `lab1.ipynb` este contiene los problemas unificados.
 
 ## Entorno
 
