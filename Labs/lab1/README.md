@@ -5,8 +5,6 @@ Se abordaron cuatro problemas de programación lineal utilizando Julia y Excel d
 ## Entorno
 
 - Julia 1.11.6
-- [JuMP.jl](https://jump.dev/)
-- [HiGHS.jl](https://github.com/jump-dev/HiGHS.jl) o similar (como GLPK)
 - IJulia
 - Jupyter Notebook
 
