@@ -1,4 +1,5 @@
 # Laboratorio de Investigación de Operaciones  
+
 ## Problema de Planeación de Producción Mensual
 
 Este ejercicio busca determinar un plan de producción para 6 meses que minimice los costos totales, tomando en cuenta:
@@ -8,16 +9,12 @@ Este ejercicio busca determinar un plan de producción para 6 meses que minimice
 - Costo de mantener inventario de un mes a otro.
 - Inventario inicial igual a cero.
 
----
-
 ## Inciso A: Construcción de la Función Objetivo
 
 Se construyó la función objetivo sumando los costos de producción y los costos de inventario para cada mes:
 
 **Función objetivo:**  
 $50x_1 + 8I_1 + 45x_2 + 10I_2 + 55x_3 + 10I_3 + 52x_4 + 10I_4 + 48x_5 + 8I_5 + 50x_6 + 8I_6$
-
----
 
 ## Inciso B: Optimización con variables continuas
 
@@ -37,8 +34,6 @@ El modelo resultó óptimo con los siguientes valores:
 
 **Costo total óptimo con producción continua:** **\$61,795.0**
 
----
-
 ## Inciso C: Optimización con variables enteras
 
 Se reformuló el modelo para que las variables de producción fueran enteras (números completos).  
@@ -48,8 +43,6 @@ El resultado fue exactamente el mismo:
 - **Diferencia con modelo continuo:** \$0.0
 
 Esto indica que la solución fraccionaria ya arrojaba valores enteros o muy cercanos.
-
----
 
 ## Conclusiones
 
