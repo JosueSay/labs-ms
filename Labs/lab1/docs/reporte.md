@@ -1,4 +1,4 @@
-<!-- ---
+---
 header-includes:
   - \usepackage{amsmath}
   - \usepackage{amssymb}
@@ -11,7 +11,7 @@ header-includes:
   - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
   - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
 geometry: top=0.67in, bottom=0.67in, left=0.85in, right=0.85in
---- -->
+---
 
 # Laboratorio 1 - Programación Lineal
 
@@ -280,14 +280,15 @@ $$
 
 **Sujeto a:**
 
+\small
 $$
 \begin{aligned}
 0.18x_1 + 0.28x_2 + 0.4x_3 + 0.5x_4 &\leq 63.75 \quad \text{(terreno)} \\
-50000x_1 + 70000x_2 + 130000x_3 + 160000x_4 &\leq 15,000,000 \quad \text{(presupuesto)} \\
+50000x_1 + 70000x_2 + 130000x_3 + 160000x_4 &\leq 15{,}000{,}000 \quad \text{(presupuesto)} \\
 4(x_3 + x_4) &\geq x_1 + x_2 + x_3 + x_4 \quad \text{(mínimo 25\% triples/cuádruples)} \\
 5x_1 &\geq x_1 + x_2 + x_3 + x_4 \quad \text{(mínimo 20\% sencillas)} \\
 10x_2 &\geq x_1 + x_2 + x_3 + x_4 \quad \text{(mínimo 10\% dobles)} \\
-x_1, x_2, x_3, x_4 \geq 0
+x_1, x_2, x_3, x_4 &\geq 0
 \end{aligned}
 $$
 
@@ -303,6 +304,7 @@ $$
 
 **Sujeto a:**
 
+\small
 $$
 \begin{aligned}
 0.18x_1 + 0.28x_2 + 0.4x_3 + 0.5x_4 &\leq 63.75 \quad \text{(terreno)} \\
