@@ -14,8 +14,8 @@ Este ejercicio busca determinar un plan de producción para 6 meses que minimice
 
 Se construyó la función objetivo sumando los costos de producción y los costos de inventario para cada mes:
 
-**Función objetivo**:  
-50x₁ + 8I₁ + 45x₂ + 10I₂ + 55x₃ + 10I₃ + 52x₄ + 10I₄ + 48x₅ + 8I₅ + 50x₆ + 8I₆
+**Función objetivo:**  
+$50x_1 + 8I_1 + 45x_2 + 10I_2 + 55x_3 + 10I_3 + 52x_4 + 10I_4 + 48x_5 + 8I_5 + 50x_6 + 8I_6$
 
 ---
 
@@ -28,14 +28,14 @@ El modelo resultó óptimo con los siguientes valores:
 
 | Mes | Producción | Inventario | Costo producción | Costo inventario |
 |-----|------------|------------|------------------|------------------|
-| 1   | 205.0      | 25.0       | 10,250.0         | 200.0            |
-| 2   | 225.0      | 0.0        | 10,125.0         | 0.0              |
-| 3   | 190.0      | 0.0        | 10,450.0         | 0.0              |
-| 4   | 160.0      | 20.0       | 8,320.0          | 200.0            |
-| 5   | 225.0      | 25.0       | 10,800.0         | 200.0            |
-| 6   | 225.0      | 0.0        | 11,250.0         | 0.0              |
+| 1   | 205.0      | 25.0       | \$10,250.0       | \$200.0          |
+| 2   | 225.0      | 0.0        | \$10,125.0       | \$0.0            |
+| 3   | 190.0      | 0.0        | \$10,450.0       | \$0.0            |
+| 4   | 160.0      | 20.0       | \$8,320.0        | \$200.0          |
+| 5   | 225.0      | 25.0       | \$10,800.0       | \$200.0          |
+| 6   | 225.0      | 0.0        | \$11,250.0       | \$0.0            |
 
-**Costo total óptimo con producción continua:** $61,795.0
+**Costo total óptimo con producción continua:** **\$61,795.0**
 
 ---
 
@@ -44,8 +44,8 @@ El modelo resultó óptimo con los siguientes valores:
 Se reformuló el modelo para que las variables de producción fueran enteras (números completos).  
 El resultado fue exactamente el mismo:
 
-- Costo total óptimo con producción entera: $61,795.0  
-- Diferencia con modelo continuo: $0.0
+- **Costo total óptimo con producción entera:** \$61,795.0  
+- **Diferencia con modelo continuo:** \$0.0
 
 Esto indica que la solución fraccionaria ya arrojaba valores enteros o muy cercanos.
 
@@ -56,5 +56,3 @@ Esto indica que la solución fraccionaria ya arrojaba valores enteros o muy cerc
 - El modelo de producción minimiza exitosamente los costos totales.
 - No hubo diferencia entre los resultados enteros y continuos, lo cual sugiere que el problema no requiere forzar enteros.
 - Julia con JuMP y HiGHS permite resolver problemas reales de optimización de forma eficiente.
-
----
