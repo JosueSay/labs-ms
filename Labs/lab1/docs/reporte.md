@@ -1,4 +1,4 @@
----
+<!-- ---
 header-includes:
   - \usepackage{amsmath}
   - \usepackage{amssymb}
@@ -11,7 +11,7 @@ header-includes:
   - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
   - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
 geometry: top=0.67in, bottom=0.67in, left=0.85in, right=0.85in
----
+--- -->
 
 # Laboratorio 1 - Programación Lineal
 
