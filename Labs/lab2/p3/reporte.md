@@ -9,13 +9,7 @@ Una empresa necesita asignar cuatro puestos de trabajo a cuatro trabajadores. El
 | Trabajador 3 | \$90     | \$30     | \$50     | –        |
 | Trabajador 4 | \$70     | \$20     | \$60     | \$70     |
 
-
-
-
-
----
-
-##  Matriz de Costos
+## Matriz de Costos
 
 costos = [
     50   50   Inf   20;
@@ -24,11 +18,7 @@ costos = [
     70   20    60   70
 ]
 
-
-
----
-
-##  Modelado con JuMP
+## Modelado con JuMP
 
 - Variables binarias `x[i,j]`:
   - `1` si el trabajador `i` ocupa el puesto `j`
@@ -38,13 +28,11 @@ costos = [
   - Cada puesto debe ser asignado a **exactamente un trabajador**.
 - Los valores `Inf` son ignorados en la función objetivo.
 
----
-
-##  Resultado del Modelo
+## Resultado del Modelo
 
 El solver HiGHS encontró la solución óptima con un **costo total de \$90.00**.
 
-### Asignaciones Óptimas:
+### Asignaciones Óptimas
 
 | Trabajador | Puesto Asignado | Costo |
 |------------|------------------|-------|
@@ -53,7 +41,3 @@ El solver HiGHS encontró la solución óptima con un **costo total de \$90.00**
 | 4          | 2                | \$20  |
 
 > Nota: El **trabajador 3** y el **puesto 4** no fueron asignados debido a las restricciones prohibidas, lo cual es válido en este contexto.
-
-
-
-
