@@ -17,10 +17,13 @@ Una empresa necesita asignar cuatro puestos de trabajo a cuatro trabajadores. El
 
 ##  Matriz de Costos
 
-[ 50 50 Inf 20;
-70 40 20 30;
-90 30 50 Inf;
-70 20 60 70 ]
+costos = [
+    50   50   Inf   20;
+    70   40    20   30;
+    90   30    50  Inf;
+    70   20    60   70
+]
+
 
 
 ---
