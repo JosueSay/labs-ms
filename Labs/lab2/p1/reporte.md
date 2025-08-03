@@ -16,8 +16,11 @@ Se planteó el modelo de transporte con tres refinerías (R1, R2, R3) y tres ár
 ### Cálculo de Costos
 
 Se utilizó la siguiente fórmula para obtener el costo por millón de galones:
+
 Costo = distancia (km) × $100
+
 Ya que el costo de transporte es de $0.10 por cada 1000 galones por km.
+
 --- 
 
 ## Inciso b
