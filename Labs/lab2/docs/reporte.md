@@ -1,4 +1,4 @@
----
+<!-- ---
 header-includes:
   - \usepackage{amsmath}
   - \usepackage{amssymb}
@@ -12,7 +12,7 @@ header-includes:
   - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
   - \AtBeginEnvironment{longtable}{\small}
 geometry: top=0.67in, bottom=0.67in, left=0.85in, right=0.85in
----
+--- -->
 
 # Laboratorio 2
 
@@ -492,11 +492,11 @@ $x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}$
 
 **Raíz:** $-1.77$
 
-![Gráfica función](../images/grafica.png){height=200px}
+![Gráfica función](../images/grafica.png)
 
 Las iteraciones (total de 6) poco a poco se acercan a un punto, en el cual los decimales se empiezan a repetir, esto indica que está convergiendo en este punto y obtiene la raíz indicada por la gráfica.
 
-![Inciso a](../images/inciso_a.png){height=200px}
+![Inciso a](../images/inciso_a.png)
 
 ## Inciso b
 
@@ -504,7 +504,7 @@ Diseñe una estrategia para resolver el cero requerido.
 
 Una mejora posible fue que las iteraciones disminuyeron al acercar el punto a la raíz.
 
-![Inciso b](../images/inciso_b.png){height=200px}
+![Inciso b](../images/inciso_b.png)
 
 # Problema 8
 
