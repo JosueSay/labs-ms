@@ -209,7 +209,7 @@ $$
 
    e. Registro & verbose: guarda $x_{k+1}$, $f$, errores, $\phi$, $\|g\|$, $\|step\|$; imprime si `verbose`.
 
-   f. Paro: si `err ≤ tol` -> `converged=True` y sale; si no, continúa.
+   f. Paro: si `err <= tol` -> `converged=True` y sale; si no, continúa.
 
 4. **Métricas finales**
    Construye `metrics` con etiqueta del método (según `phiMode`/`phi`), convergencia, iteraciones, $\| \nabla f \|$, tiempos e historia.
@@ -302,7 +302,7 @@ $$
 
    f. **Registro & verbose**: guarda series (gradNorms, stepNorms, errors, directions, …) e imprime si `verbose`.
 
-   g. **Paro por tolerancia**: si `err ≤ tol`, marca `converged=True` y termina.
+   g. **Paro por tolerancia**: si `err <= tol`, marca `converged=True` y termina.
 
    h. **Avance**: asigna `x <- x_new`, `g <- df(x_new)` y continúa.
 
@@ -335,3 +335,70 @@ $$
 - `metrics.solveSystem`: `"solve"` o `"inv"` (cómo se resolvió $H d=-g$).
 - `metrics.history.angles`: **`None`** (Newton no usa ángulos).
 - Lo demás: **usa los retornos comunes**.
+
+## Gradiente Conjugado (FR / PR / PR+ / HS)
+
+### Funcionamiento
+
+El Gradiente Conjugado no lineal (GC) acelera el descenso usando direcciones que combinan la información actual y la pasada:
+
+$$
+d_k = -g_k + \beta_k\, d_{k-1}, \quad g_k=\nabla f(x_k).
+$$
+
+Luego actualiza con paso constante (naïve):
+
+$$
+x_{k+1}=x_k+\alpha\, d_k.
+$$
+
+La elección de $\beta_k$ define la variante:
+
+- **FR (Fletcher–Reeves):** $\displaystyle \beta^{FR}_{k+1}=\frac{\langle g_{k+1},g_{k+1}\rangle}{\langle g_k,g_k\rangle}$.
+- **PR (Polak–Ribiere):** $\displaystyle \beta^{PR}_{k+1}=\frac{\langle g_{k+1},\, g_{k+1}-g_k\rangle}{\langle g_k,g_k\rangle}$.
+- **PR+ (recortado):** $\beta^{PR+}_{k+1}=\max\{0,\beta^{PR}_{k+1}\}$.
+- **HS (Hestenes–Stiefel):** $\displaystyle \beta^{HS}_{k+1}=\frac{\langle g_{k+1},\, y_k\rangle}{\langle d_k,\, y_k\rangle}$, $y_k=g_{k+1}-g_k$.
+
+### Flujo interno
+
+1. **Inicialización:**
+
+   $x_0$ dado, $g_0=\nabla f(x_0)$, $d_0=-g_0$. Registrar historia.
+
+2. **Iteración $k=1,\dots$:**
+
+   a. **Paso naïve:** $x_{k}=x_{k-1}+\alpha\, d_{k-1}$.
+
+   b. **Evaluar:** $f(x_k)$, $g_k=\nabla f(x_k)$ y el **error** según `stopCrit`.
+
+   c. **Paro por tolerancia:** si `err <= tol`, detener.
+
+   d. **Cálculo de $\beta$:** FR/PR/PR+/HS (con estabilizador en denominadores).
+
+   e. **Reinicio opcional:** cada `restartEvery` pasos ⇒ $\beta=0$ (dirección = $-g_k$).
+
+   f. **Asegurar descenso (opcional):** si `g_k^T d_k >= 0` ⇒ reiniciar $d_k=-g_k$.
+
+### Parámetros de entrada (específicos de GC)
+
+En `extra`:
+
+- **`betaRule`**: `"FR"` (default) | `"PR"` | `"PR+"` | `"HS"`.
+- **`restartEvery`**: `int` o `None`. Si es entero $m>0$, reinicia cada $m$ pasos (pone $d=-g$).
+- **`denomEps`**: `float` (default `1e-15`). Pequeño $\epsilon$ para evitar divisiones numéricamente inestables.
+- **`ensureDescent`**: `bool` (default `True`). Si $g^\top d \ge 0$, fuerza reinicio a $d=-g$.
+
+> El resto de entradas (`f, df, x0, alpha, maxIter, tol, stopCrit, normOrder, isPlottable, randomState, verbose`) son **comunes**.
+
+### Retornos
+
+Usa los **retornos comunes** y añade:
+
+- `metrics.method`: `"Nonlinear Conjugate Gradient (naive, {betaRule})"`.
+- `metrics.betaRule`: regla seleccionada.
+- `metrics.restartEvery`: valor usado (o `None`).
+- `metrics.restarts`: número de reinicios efectuados.
+- `metrics.ensureDescent`: `True/False`.
+- `metrics.history.betas`: serie de $\beta_k$.
+- `metrics.history.angles`: `None` (GC no usa ángulos).
+- `metrics.history.directions`: direcciones $d_k$ registradas.
