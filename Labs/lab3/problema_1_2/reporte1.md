@@ -76,7 +76,7 @@ donde:
 
 4. **`alpha`**
    Tamaño de paso constante $\alpha>0$.
-   Grande ⇒ riesgo de divergencia; pequeño ⇒ lento.
+   Grande => riesgo de divergencia; pequeño => lento.
 
 5. **`maxIter`**
    Máximo de iteraciones (paro “duro”).
@@ -224,8 +224,8 @@ $$
 
 > Nota: Los *wrappers*
 >
-> - `gradientDescentRandom(...)` fija `extra={"phiMode":"random"}` y **no exponen** `extra`.
-> - `steepestDescent(...)` fija `extra={"phiMode":"fixed","phi":0.0}` y **no exponen** `extra`.
+> - `gradientDescentRandom(...)` fija `extra={"phiMode":"random"}` y no exponen `extra`.
+> - `steepestDescent(...)` fija `extra={"phiMode":"fixed","phi":0.0}` y no exponen `extra`.
 >   Ambos reciben el resto de parámetros (`alpha`, `maxIter`, `tol`, `stopCrit`, `normOrder`, `isPlottable`, `randomState`, `verbose`).
 
 ### Retornos
@@ -235,7 +235,7 @@ $$
   - `"Steepest Descent (naive)"` (si `phiMode="fixed", phi=0`)
   - `"Gradient Descent (random direction naive)"` (si `phiMode="random"`)
   - `"Gradient Descent (fixed-angle naive)"` (si `phiMode="fixed", phi≠0`)
-- `metrics.history.angles`: **array** con $\phi_k$ por iteración.
+- `metrics.history.angles`: array con $\phi_k$ por iteración.
 - Lo demás: **usa los retornos comunes**.
 
 ## Descenso gradiente de Newton, con Hessiano exacto
@@ -326,14 +326,14 @@ $$
 
 > Notas:
 >
-> - La implementación verifica $g^\top d<0$; si no se cumple (Hessiano no PD o mal condicionado), **cambia a `d=-g`** como respaldo para asegurar dirección de descenso.
-> - Si el sistema con $H$ falla, se usa **pseudo-inversa** como *fallback*.
+> - La implementación verifica $g^\top d<0$; si no se cumple (Hessiano no PD o mal condicionado), cambia a $d=-g$ como respaldo para asegurar dirección de descenso.
+> - Si el sistema con $H$ falla, se usa pseudo-inversa como *fallback*.
 
 ### Retornos
 
-- `metrics.method`: `"Newton (exact Hessian, naive step)"`.
-- `metrics.solveSystem`: `"solve"` o `"inv"` (cómo se resolvió $H d=-g$).
-- `metrics.history.angles`: **`None`** (Newton no usa ángulos).
+- `metrics.method`: Newton (exact Hessian, naive step).
+- `metrics.solveSystem`: `solve` o `inv` (cómo se resolvió $H d=-g$).
+- `metrics.history.angles`: `None` (Newton no usa ángulos).
 - Lo demás: **usa los retornos comunes**.
 
 ## Gradiente Conjugado (FR / PR / PR+ / HS)
@@ -369,17 +369,17 @@ La elección de $\beta_k$ define la variante:
 
    a. **Paso naïve:** $x_{k}=x_{k-1}+\alpha\, d_{k-1}$.
 
-   b. **Evaluar:** $f(x_k)$, $g_k=\nabla f(x_k)$ y el **error** según `stopCrit`.
+   b. **Evaluar:** $f(x_k)$, $g_k=\nabla f(x_k)$ y el error según `stopCrit`.
 
    c. **Paro por tolerancia:** si `err <= tol`, detener.
 
    d. **Cálculo de $\beta$:** FR/PR/PR+/HS (con estabilizador en denominadores).
 
-   e. **Reinicio opcional:** cada `restartEvery` pasos ⇒ $\beta=0$ (dirección = $-g_k$).
+   e. **Reinicio opcional:** cada `restartEvery` pasos => $\beta=0$ (dirección = $-g_k$).
 
-   f. **Asegurar descenso (opcional):** si `g_k^T d_k >= 0` ⇒ reiniciar $d_k=-g_k$.
+   f. **Asegurar descenso (opcional):** si `g_k^T d_k >= 0` => reiniciar $d_k=-g_k$.
 
-### Parámetros de entrada (específicos de GC)
+### Parámetros de entrada
 
 En `extra`:
 
@@ -402,3 +402,70 @@ Usa los **retornos comunes** y añade:
 - `metrics.history.betas`: serie de $\beta_k$.
 - `metrics.history.angles`: `None` (GC no usa ángulos).
 - `metrics.history.directions`: direcciones $d_k$ registradas.
+
+## Método BFGS (cuasi-Newton)
+
+### Funcionamiento
+
+BFGS aproxima iterativamente la inversa del Hessiano $H_k \approx \nabla^2 f(x_k)^{-1}$ para construir una dirección tipo Newton sin calcular $\nabla^2 f$ explícito:
+
+$$
+d_k = -\,H_k\,g_k,\quad g_k=\nabla f(x_k),
+\qquad
+x_{k+1}=x_k+\alpha\,d_k \ \ (\alpha>0 \ \text{constante, naïve})
+$$
+
+Tras el paso, actualiza $H_k$ usando solo primeras derivadas con el par
+
+$$
+s_k = x_{k+1}-x_k,\qquad y_k = g_{k+1}-g_k,
+$$
+
+aplicando la fórmula BFGS (garantiza $H_{k+1}$ simétrica y, si $s_k^\top y_k>0$, definida positiva):
+
+$$
+H_{k+1} = \big(I-\rho_k s_k y_k^\top\big) H_k \big(I-\rho_k y_k s_k^\top\big) + \rho_k\, s_k s_k^\top,
+\quad \rho_k=\frac{1}{y_k^\top s_k}.
+$$
+
+### Flujo interno
+
+1. **Inicialización**
+
+   $x_0$ dado, $H_0=I$ (o matriz SPD provista), $g_0=\nabla f(x_0)$.
+
+2. **Dirección**
+
+   $d_k=-H_k g_k$. (Opcional: si $g_k^\top d_k\ge 0$, forzar $d_k=-g_k$ para asegurar descenso).
+
+3. **Paso (naive)**
+
+   $x_{k+1}=x_k+\alpha d_k$.
+
+4. **Actualización de memoria**
+
+   $s_k=x_{k+1}-x_k$, $y_k=g_{k+1}-g_k$.
+
+   - **Curvatura**: si $y_k^\top s_k \le \varepsilon$ (muy pequeño/no positivo) se omite la actualización para evitar perder SPD.
+   - Si pasa el umbral: aplicar fórmula BFGS y simetrizar numéricamente $H_{k+1}\leftarrow \tfrac12(H_{k+1}+H_{k+1}^\top)$.
+
+5. **Criterios de paro**
+
+   Según `stopCrit` (norma del gradiente, cambio en $f$, o en $x$), o por `maxIter`.
+
+### Parámetros de entrada
+
+- **`H0`**: inversa-Hessiana inicial $(n\times n)$. *Default:* $I$.
+- **`skipUpdateIf`**: umbral para $y_k^\top s_k$ (p.ej. `1e-12`). Si $\le$ umbral, no se actualiza $H$.
+- **`ensureDescent`** (`True/False`): si $g_k^\top d_k \ge 0$, usar $d_k=-g_k$ (respaldo de descenso).
+
+> El resto (`f, df, x0, alpha, maxIter, tol, stopCrit, normOrder, isPlottable, randomState, verbose`) son **comunes**.
+
+### Retornos
+
+Usa los **retornos comunes** y añade:
+
+- `metrics.method`: `"BFGS (naive step)"`.
+- `metrics.skipUpdateIf`, `metrics.ensureDescent`.
+- `metrics.history.directions`: direcciones $d_k$.
+- `metrics.history.angles`: `None` (no usa ángulos).
