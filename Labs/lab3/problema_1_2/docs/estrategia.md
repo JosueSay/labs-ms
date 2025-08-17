@@ -61,7 +61,7 @@ Tupla:
 
 Se registra cuál ocurrió primero en `metrics.stopReason`.
 
-<!-- ## Nombres de funciones (camelCase)
+## Funciones
 
 - `gradientDescentRandom(...)` — descenso con **dirección de descenso aleatoria** (o ángulo fijo si `phiMode="fixed"`).
 - `steepestDescent(...)` — descenso máximo.
@@ -69,7 +69,7 @@ Se registra cuál ocurrió primero en `metrics.stopReason`.
 - `conjugateGradientDescent(...)` — Fletcher–Reeves / Polak–Ribière / Hestenes–Stiefel vía `betaRule`.
 - `bfgsDescent(...)` — BFGS.
 
-> Todas comparten la interfaz/retornos anteriores; solo difieren en cómo calculan la **dirección $d_k$** antes de actualizar $x_{k+1}=x_k+\alpha d_k$. -->
+> Todas comparten la interfaz/retornos anteriores; solo difieren en cómo calculan la **dirección $d_k$** antes de actualizar $x_{k+1}=x_k+\alpha d_k$.
 
 ## Consideraciones para gráficas y comparación
 
