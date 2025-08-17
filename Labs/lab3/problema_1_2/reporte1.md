@@ -63,6 +63,100 @@ donde:
 - $-\hat g$ es el gradiente negativo unitario.
 - $v$ es un vector unitario ortogonal al gradiente.
 
+## Parámetros de entrada
+
+1. **`f`**
+   Función objetivo $f:\mathbb{R}^n\to\mathbb{R}$. Debe aceptar `np.array` y devolver escalar.
+
+2. **`df`**
+   Gradiente $\nabla f(x)$. Debe devolver `np.array` de shape `(n,)`.
+
+3. **`x0`**
+   Punto inicial `np.array` de shape `(n,)` (tipo float).
+
+4. **`alpha`**
+   Tamaño de paso constante $\alpha>0$.
+   Grande ⇒ riesgo de divergencia; pequeño ⇒ lento.
+
+5. **`maxIter`**
+   Máximo de iteraciones (paro “duro”).
+
+6. **`tol`**
+   Tolerancia $\varepsilon>0$ (paro por precisión según `stopCrit`).
+
+7. **`stopCrit`**
+   Criterio de paro por tolerancia:
+
+   - `"grad"`: $\|\nabla f(x_k)\|\le\varepsilon$
+   - `"fx"`: $|f(x_k)-f(x_{k-1})|\le\varepsilon$
+   - `"xAbs"`: $\|x_k-x_{k-1}\|\le\varepsilon$
+   - `"xRel"`: $\|x_k-x_{k-1}\|/\max(1,\|x_k\|)\le\varepsilon$
+
+8. **`normOrder`**
+   Norma para medir gradiente/pasos/errores: `1`, `2` (default) o `np.inf`.
+
+9. **`isPlottable`**
+   `True` -> si $n=2$ guarda trayectoria para graficar.
+
+10. **`randomState`**
+    Semilla para reproducibilidad (afecta la dirección aleatoria y el muestreo de ángulos).
+
+11. **`verbose`**
+    `True` -> imprime resumen por iteración (`k`, `f(x_k)`, $\|\nabla f\|$, $\|step\|$, error, `phi`).
+
+## Retornos
+
+1. **`best`**
+
+   Última aproximación $x_{k^*}$.
+
+   - Tipo: `np.array` shape `(n,)`.
+
+2. **`xs`**
+
+   Secuencia de iterados $[x_0,\dots,x_{k^*}]$.
+
+   - Tipo: `np.array` shape `(k^*+1, n)`.
+
+3. **`fxs`**
+
+   Valores de la función $[f(x_0),\dots,f(x_{k^*})]$.
+
+   - Tipo: `np.array` shape `(k^*+1,)`.
+
+4. **`errors`**
+
+   Errores por iteración según `stopCrit` (grad, fx, xAbs, xRel).
+
+   - Tipo: `np.array` shape `(k^*,)` — uno por paso realizado.
+
+5. **`metrics`** (`dict`) — resumen para reporte/gráficas:
+
+   - `method`: etiqueta del método usado.
+   - `converged`: `True/False`.
+   - `stopReason`: `"tolerance"` o `"maxIter"`.
+   - `iterations`: $k^*$ (número de pasos realizados).
+   - `finalX`: copia de `best`.
+   - `finalFx`: $f(best)$.
+   - `gradNorm`: $\|\nabla f(best)\|$ con `normOrder`.
+   - `stepNorm`: $\|x_{k^*}-x_{k^*-1}\|$ (si $k^*>0$).
+   - `approxError`: último error (según `stopCrit`).
+   - `alpha`: tamaño de paso usado.
+   - `timeSec`: tiempo total (segundos).
+   - `seed`: `randomState` efectivo.
+   - `history` (sub-dict con series):
+
+     - `k`: array de iteraciones $[1,\dots,k^*]$.
+     - `gradNorms`: $\|\nabla f(x_k)\|$ para $k=0,\dots,k^*$.
+     - `stepNorms`: $\|x_k-x_{k-1}\|$ para $k=1,\dots,k^*$.
+     - `approxErrors`: copia de `errors`.
+     - `angles`: ángulo $\phi_k$ usado (si aplica).
+     - `directions`: direcciones $d_k$ (si se guardan).
+     - `xs2D`: trayectoria 2D (si `isPlottable` y $n=2$).
+
+> Nota: `len(xs) = len(fxs) = k^*+1`, `len(errors) = len(stepNorms) = len(history['k']) = k^*`.
+> Si el paro fue por tolerancia, `converged=True` y `stopReason="tolerance"`; si no, `"maxIter"`.
+
 ## Descenso gradiente naïve con dirección de descenso aleatoria y Descenso máximo naïve
 
 ### Funcionamiento
@@ -122,46 +216,7 @@ $$
 
 ### Parámetros de entrada
 
-1. **`f`**
-   Función objetivo $f:\mathbb{R}^n\to\mathbb{R}$. Debe aceptar `np.array` y devolver escalar.
-
-2. **`df`**
-   Gradiente $\nabla f(x)$. Debe devolver `np.array` de shape `(n,)`.
-
-3. **`x0`**
-   Punto inicial `np.array` de shape `(n,)` (tipo float).
-
-4. **`alpha`**
-   Tamaño de paso constante $\alpha>0$.
-   Grande ⇒ riesgo de divergencia; pequeño ⇒ lento.
-
-5. **`maxIter`**
-   Máximo de iteraciones (paro “duro”).
-
-6. **`tol`**
-   Tolerancia $\varepsilon>0$ (paro por precisión según `stopCrit`).
-
-7. **`stopCrit`**
-   Criterio de paro por tolerancia:
-
-   - `"grad"`: $\|\nabla f(x_k)\|\le\varepsilon$
-   - `"fx"`: $|f(x_k)-f(x_{k-1})|\le\varepsilon$
-   - `"xAbs"`: $\|x_k-x_{k-1}\|\le\varepsilon$
-   - `"xRel"`: $\|x_k-x_{k-1}\|/\max(1,\|x_k\|)\le\varepsilon$
-
-8. **`normOrder`**
-   Norma para medir gradiente/pasos/errores: `1`, `2` (default) o `np.inf`.
-
-9. **`isPlottable`**
-   `True` -> si $n=2$ guarda trayectoria para graficar.
-
-10. **`randomState`**
-    Semilla para reproducibilidad (afecta la dirección aleatoria y el muestreo de ángulos).
-
-11. **`verbose`**
-    `True` -> imprime resumen por iteración (`k`, `f(x_k)`, $\|\nabla f\|$, $\|step\|$, error, `phi`).
-
-12. **`extra`** *(solo en `gradientDescentNaive` — los wrappers lo fijan internamente)*
+1. **`extra`** *(solo en `gradientDescentNaive` — los wrappers lo fijan internamente)*
 
     - `"phiMode"`: `"random"` (default) o `"fixed"`.
     - `"phi"`: ángulo fijo (radianes) si `"fixed"`; `0.0` ≡ *steepest descent*.
@@ -175,53 +230,108 @@ $$
 
 ### Retornos
 
-1. **`best`**
+- `metrics.method`:
 
-   Última aproximación $x_{k^*}$.
+  - `"Steepest Descent (naive)"` (si `phiMode="fixed", phi=0`)
+  - `"Gradient Descent (random direction naive)"` (si `phiMode="random"`)
+  - `"Gradient Descent (fixed-angle naive)"` (si `phiMode="fixed", phi≠0`)
+- `metrics.history.angles`: **array** con $\phi_k$ por iteración.
+- Lo demás: **usa los retornos comunes**.
 
-   - Tipo: `np.array` shape `(n,)`.
+## Descenso gradiente de Newton, con Hessiano exacto
 
-2. **`xs`**
+### Funcionamiento
 
-   Secuencia de iterados $[x_0,\dots,x_{k^*}]$.
+El método de Newton minimiza $f$ usando un*modelo cuadrático local en $x_k$:
 
-   - Tipo: `np.array` shape `(k^*+1, n)`.
+$$
+m_k(d)=f(x_k)+\nabla f(x_k)^\top d+\tfrac12\, d^\top \nabla^2 f(x_k)\, d.
+$$
 
-3. **`fxs`**
+Minimizar $m_k$ da la dirección de Newton como solución del sistema
 
-   Valores de la función $[f(x_0),\dots,f(x_{k^*})]$.
+$$
+\nabla^2 f(x_k)\, d_k=-\nabla f(x_k).
+$$
 
-   - Tipo: `np.array` shape `(k^*+1,)`.
+Luego se actualiza con paso constante $\alpha$ (típicamente $\alpha=1$):
 
-4. **`errors`**
+$$
+x_{k+1}=x_k+\alpha\, d_k.
+$$
 
-   Errores por iteración según `stopCrit` (grad, fx, xAbs, xRel).
+- Si el Hessiano es definido positivo (PD) en el entorno del mínimo, $d_k$ suele ser dirección de descenso ($\nabla f(x_k)^\top d_k<0$) y la convergencia cerca de la solución es cuadrática.
+- Si el Hessiano es indefinido/mal condicionado, $d_k$ puede no ser de descenso; en ese caso se verifica $g^\top d<0$ y, si falla, se cambia a $d=-g$ (steepest) como respaldo para asegurar descenso.
+- La dirección se obtiene resolviendo el sistema lineal; no se invierte la matriz salvo que se pida explícitamente.
 
-   - Tipo: `np.array` shape `(k^*,)` — uno por paso realizado.
+### Flujo interno
 
-5. **`metrics`** (`dict`) — resumen para reporte/gráficas:
+1. **Validaciones de `extra`**
 
-   - `method`: etiqueta del método usado (p.ej. “Steepest Descent (naive)” o “Gradient Descent (random direction naive)”).
-   - `converged`: `True/False`.
-   - `stopReason`: `"tolerance"` o `"maxIter"`.
-   - `iterations`: $k^*$ (número de pasos realizados).
-   - `finalX`: copia de `best`.
-   - `finalFx`: $f(best)$.
-   - `gradNorm`: $\|\nabla f(best)\|$ con `normOrder`.
-   - `stepNorm`: $\|x_{k^*}-x_{k^*-1}\|$ (si $k^*>0$).
-   - `approxError`: último error (según `stopCrit`).
-   - `alpha`: tamaño de paso usado.
-   - `timeSec`: tiempo total (segundos).
-   - `history` (sub-dict con series):
+   - Requiere `extra["ddf"]`: `ddf(x)` o matriz constante $n\times n$.
+   - `solveSystem{"solve","inv"}` (por defecto `"solve"`).
 
-     - `k`: array de iteraciones $[1,\dots,k^*]$.
-     - `gradNorms`: $\|\nabla f(x_k)\|$ para $k=0,\dots,k^*$.
-     - `stepNorms`: $\|x_k-x_{k-1}\|$ para $k=1,\dots,k^*$.
-     - `approxErrors`: copia de `errors`.
-     - `angles`: ángulo $\phi_k$ usado (si aplica).
-     - `directions`: direcciones $d_k$ (si se guardan).
-     - `xs2D`: trayectoria 2D (si `isPlottable` y $n=2$).
-   - `seed`: `randomState` efectivo.
+2. **Estado inicial**
 
-> Nota: `len(xs) = len(fxs) = k^*+1`, `len(errors) = len(stepNorms) = len(history['k']) = k^*`.
-> Si el paro fue por tolerancia, `converged=True` y `stopReason="tolerance"`; si no, `"maxIter"`.
+   - Convierte `x0` a vector `float` de shape `(n,)`.
+   - Evalúa $f(x_0)$ y $g_0=\nabla f(x_0)$.
+   - Inicializa contenedores de historia (para métricas y, si $n=2$, trayectoria 2D).
+   - `verbose` imprime resumen de $k=0$.
+
+3. **Bucle (k = 1…maxIter)**
+
+   a. **Hessiano**: $H_k=$ `ddf(x)` (o matriz fija).
+
+   b. **Dirección de Newton**: resuelve $H_k d=-g_k$.
+
+   - Si `solveSystem="solve"` usa `np.linalg.solve`.
+   - Si falla (singular/indefinida), usa pseudo-inversa como respaldo.
+
+   c. **Chequeo de descenso**: calcula $g_k^\top d$.
+
+   - Si no es finito o $\ge 0$, cambia a $d=-g_k$.
+
+   d. **Actualización**: `x_new = x + alpha*d`, `fx_new = f(x_new)`, `step = x_new - x`.
+
+   e. **Error** según `stopCrit`:
+
+   - `"grad"`: $\|\nabla f(x_{k+1})\|$
+   - `"fx"`: $|f(x_{k+1})-f(x_k)|$
+   - `"xAbs"`: $\|x_{k+1}-x_k\|$
+   - `"xRel"`: $\|x_{k+1}-x_k\|/\max(1,\|x_{k+1}\|)$
+
+   f. **Registro & verbose**: guarda series (gradNorms, stepNorms, errors, directions, …) e imprime si `verbose`.
+
+   g. **Paro por tolerancia**: si `err ≤ tol`, marca `converged=True` y termina.
+
+   h. **Avance**: asigna `x <- x_new`, `g <- df(x_new)` y continúa.
+
+4. **Cierre y métricas**
+
+   - Calcula tiempo total, número de iteraciones $k^*$ y arma `metrics` con:
+     `method="Newton (exact Hessian, naive step)"`, `converged`, `stopReason`, `iterations`, `finalX`, `finalFx`, `gradNorm`, `stepNorm`, `approxError`, `alpha`, `timeSec`, `seed`, `solveSystem`, e `history` (sin ángulos: `angles=None`).
+
+### Parámetros de entrada
+
+1. **`extra`**
+
+    - **`ddf`** *(requerido)*: Hessiano exacto. Puede ser:
+
+      - *callable* `ddf(x)` -> retorna matriz $n\times n$.
+      - Matriz fija `np.ndarray` $n\times n$ (solo si es constante).
+    - **`solveSystem`**: `"solve"` (default) | `"inv"`.
+
+      - `"solve"` usa `np.linalg.solve(H, -g)` (mejor numéricamente).
+      - `"inv"` usa $d=-H^{-1}g$ (menos recomendado).
+
+> Notas:
+>
+> - La implementación verifica $g^\top d<0$; si no se cumple (Hessiano no PD o mal condicionado), **cambia a `d=-g`** como respaldo para asegurar dirección de descenso.
+> - Si el sistema con $H$ falla, se usa **pseudo-inversa** como *fallback*.
+
+### Retornos
+
+- `metrics.method`: `"Newton (exact Hessian, naive step)"`.
+- `metrics.solveSystem`: `"solve"` o `"inv"` (cómo se resolvió $H d=-g$).
+- `metrics.history.angles`: **`None`** (Newton no usa ángulos).
+- Lo demás: **usa los retornos comunes**.
