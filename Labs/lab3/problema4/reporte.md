@@ -25,7 +25,18 @@ $$
 Implementamos en Python un algoritmo de optimización para resolver el problema de regresión en los siguientes 3 casos:
 
 ---
+## Detalles de implementación comunes
 
+- **Lectura de datos**: `pandas.read_csv("datos_lab3.csv")` para obtener vectores `x` y `y`.
+- **Matriz de diseño**: construimos \(X \in \mathbb{R}^{n\times 5}\) con columnas
+  \([1,\; x,\; x^2,\; \sin(7x),\; \sin(13x)]\).
+- **Ordenamiento por tiempo**: como el término de suavidad usa diferencias \(f(x_{i+1})-f(x_i)\), aseguramos que los datos estén **ordenados por \(x\)** (series de tiempo) antes de formar la matriz de diferencias \(D\).
+- **Estabilidad numérica**: cuando resolvimos sistemas, preferimos resolver con
+  `np.linalg.solve(A, b)` o `np.linalg.pinv(A) @ b` sobre invertir matrices explícitamente.
+- **Gráficas**: comparamos datos originales vs. predicciones para cada \(\lambda\) en la misma figura.
+
+
+---
 ## Inciso a: $\lambda = 0$
 
 En este caso no hay regularización, por lo que la solución corresponde a una **regresión lineal múltiple clásica**.  
