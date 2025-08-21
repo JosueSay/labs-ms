@@ -13,12 +13,12 @@ Este laboratorio implementa y analiza distintos métodos de optimización basado
 .
 ├── README.md
 ├── docs
-│   ├── guia.pdf                 # Enunciado oficial del laboratorio
-│   └── reporte.md               # Reporte general con resultados y análisis
+│   ├── guia.pdf                  # Enunciado oficial del laboratorio
+│   └── reporte.md                # Reporte general con resultados y análisis
 ├── images
-│   └── example_graph.png        # Ejemplo de visualización de convergencia
+│   └── example_graph.png         # Ejemplo de visualización de convergencia
 ├── problema1
-│   ├── p1.ipynb                  # Implementación de métodos de descenso gradiente
+│   ├── p1_p2.ipynb               # Implementación de métodos de descenso gradiente
 │   └── reporte.md
 ├── problema2
 │   ├── p2.ipynb                  # Pruebas con funciones dadas y análisis comparativo
