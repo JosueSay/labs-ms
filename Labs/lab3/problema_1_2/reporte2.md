@@ -45,11 +45,11 @@ Punto inicial: $x_0 = (-3, 1)^T$, Óptimo: $x^* = (-1.01463, -1.04453)^T, \; f(x
 
 ### Descenso gradiente de Newton, con Hessiano exacto
 
-#### $\alpha$ = 1.0
+**$\alpha$ = 1.0**
 
 ![Resultado](../images/plots_funciones/newton_case_a_a1.png)
 
-#### $\alpha$ = 0.1
+**$\alpha$ = 0.1**
 
 ![Resultado](../images/plots_funciones/newton_case_a_a2.png)
 
@@ -81,11 +81,11 @@ Punto inicial: $x_0 = (-1.2, 1)^T$, Óptimo: $x^* = (1, 1)^T, \; f(x^*) = 0$.
 
 ### Descenso gradiente de Newton, con Hessiano exacto
 
-#### $\alpha$ = 1.0
+**$\alpha$ = 1.0**
 
 ![Resultado](../images/plots_funciones/newton_case_b_a1.png)
 
-#### $\alpha$ = 0.1
+**$\alpha$ = 0.1**
 
 ![Resultado](../images/plots_funciones/newton_case_b_a2.png)
 
@@ -143,7 +143,7 @@ En conjunto, los resultados reflejan claramente lo que se esperaría según la g
 
 La pendiente de las curvas indica la **tasa de convergencia**, mientras que los cruces muestran qué método domina en cada tramo. Las tres métricas —$|x_k-x^\star|$, $|\nabla f(x_k)|$ y $|f(x_k)-f^\star|$— se corroboran entre sí: cuando las dos primeras disminuyen rápidamente, la tercera también lo hace, salvo en los casos donde el método se estaciona fuera del óptimo.
 
-#### Caso A ($f_a$)
+**Caso A ($f_a$)**
 
 ![Brecha función e Iteración](../images/plots_comparaciones/case_a_fx_gap.png)
 
@@ -170,7 +170,7 @@ La pendiente de las curvas indica la **tasa de convergencia**, mientras que los 
    - Se aplanan pronto y oscilan cerca del valle.
    - Se observan mesetas en $|\nabla f|$ y $|x_k-x^\star|$.
 
-#### Caso B (Rosenbrock 2D)
+**Caso B (Rosenbrock 2D)**
 
 ![Brecha función e Iteración](../images/plots_comparaciones/case_b_rosen2_fx_gap.png)
 
@@ -195,7 +195,7 @@ La pendiente de las curvas indica la **tasa de convergencia**, mientras que los 
 
    - Se estancan en un rango de $\sim10^{-2}$ a $10^0$.
 
-#### Caso C (Rosenbrock 7D)
+**Caso C (Rosenbrock 7D)**
 
 ![Brecha función e Iteración](../images/plots_comparaciones/case_c_rosen7_fx_gap.png)
 
