@@ -12,24 +12,12 @@ Este laboratorio implementa y analiza distintos métodos de optimización basado
 ```bash
 .
 ├── README.md
-├── docs
-│   ├── guia.pdf                  # Enunciado oficial del laboratorio
-│   └── reporte.md                # Reporte general con resultados y análisis
-├── images
-│   └── example_graph.png         # Ejemplo de visualización de convergencia
-├── problema1
-│   ├── p1_p2.ipynb               # Implementación de métodos de descenso gradiente
-│   └── reporte.md
-├── problema2
-│   ├── p2.ipynb                  # Pruebas con funciones dadas y análisis comparativo
-│   └── reporte.md
-├── problema3
-│   ├── p3.ipynb                  # Función suma de gaussianas 2D y búsqueda de mínimos
-│   └── reporte.md
-└── problema4
-    ├── datos_lab3.csv            # Datos de serie de tiempo
-    ├── p4.ipynb                  # Regresión con regularización y comparación
-    └── reporte.md
+├── docs                          # Reporte general con resultados y análisis y pdf de ayuda
+├── images                        # Imágenes obtenidas al resolver los incisos
+├── problema_1_2                  # Implementación de métodos de descenso gradiente y pruebas con funciones dadas y análisis comparativo
+├── problema3                     # Función suma de gaussianas 2D y búsqueda de mínimos
+└── problema4                     # Regresión con regularización y comparación
+    └── datos_lab3.csv            # Datos de serie de tiempo
 ```
 
 ## Problemas resueltos
