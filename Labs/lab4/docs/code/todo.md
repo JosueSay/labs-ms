@@ -8,21 +8,20 @@
 
 **Decisión:** leer **siempre** coordenadas y validarlas (sin “opcional”).
 
-## Módulo B — Distancias (se hace una vez)
+### Módulo B (actualizado)
 
 **Input:** $\mathcal{C}$, `EDGE_WEIGHT_TYPE=EUC_2D`.
 
-**Parámetros (fijos):** redondeo TSPLIB.
+**Cálculo (TSPLIB):** $d_{ij}=\left\lfloor \sqrt{(x_i-x_j)^2+(y_i-y_j)^2}+0.5\right\rfloor$.
 
-**Cálculo:**
+**Output (elige 1):**
 
-$d_{ij}=\left\lfloor \sqrt{(x_i-x_j)^2+(y_i-y_j)^2}+0.5\right\rfloor$, $d_{ii}=0$, $D=[d_{ij}]$.
+* **A:** $D\in\mathbb{N}^{n\times n}$ (simétrica). Memoria $O(n^2)$.
 
-**Output:** $D\in\mathbb{N}^{n\times n}$, simétrica.
+* **B:** estructura triangular $T$ con accesor $d(i,j)$. Memoria $O\!\left(\tfrac{n(n-1)}{2}\right)$.
+  **Complejidad:** tiempo $O(n^2)$ en ambos; memoria según A o B.
 
-**Complejidad:** $O(n^2)$ tiempo/memoria.
-
-**Decisión:** **siempre** construir $D$ (aunque luego no uses las coordenadas para el GA).
+Para tu GA y visualización nada más cambia: en B sustituye toda lectura $D[i,j]$ por $d(i,j)$.
 
 ## Módulo C — Representación
 
@@ -52,8 +51,8 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 **Parámetros (determinados):**
 
-- Proporción aleatoria pura: $80%$.
-- Semillas heurísticas débiles (p. ej., nearest-neighbor) + **shuffle fuerte**: $20%$.
+* Proporción aleatoria pura: $80%$.
+* Semillas heurísticas débiles (p. ej., nearest-neighbor) + **shuffle fuerte**: $20%$.
 
   **Regla anti-concentración:** si Hamming medio entre individuos $< \theta_H$ (umbral), **rehacer** los últimos añadidos; usar $\theta_H=0.2n$.
 
@@ -75,10 +74,10 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 **Parámetros (determinados):**
 
-- **Elitismo:** $e=2%$ (redondeo $\ge1$).
-- **Supervivientes:** $s=30%$ (ranking truncation).
-- **Padres (para cruce):** torneo con $k=3$ (sin reemplazo).
-- **Umbral de concentración:** si $\text{std}(L)$ de $P^{(t)}$ $< \theta_L$ (p. ej. $0.02\cdot \overline{L}$), **bajar** momentáneamente $k$ a $2$ y **subir** mutación (ver Módulo I).
+* **Elitismo:** $e=2%$ (redondeo $\ge1$).
+* **Supervivientes:** $s=30%$ (ranking truncation).
+* **Padres (para cruce):** torneo con $k=3$ (sin reemplazo).
+* **Umbral de concentración:** si $\text{std}(L)$ de $P^{(t)}$ $< \theta_L$ (p. ej. $0.02\cdot \overline{L}$), **bajar** momentáneamente $k$ a $2$ y **subir** mutación (ver Módulo I).
 
   **Output:** $S^{(t)}$ (supervivientes) y multiconjunto de padres.
 
@@ -104,9 +103,9 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 **Operadores (mezcla fija):**
 
-- $40%$ **swap**, $30%$ **insert**, $30%$ **inversion (2-opt move)**.
+* $40%$ **swap**, $30%$ **insert**, $30%$ **inversion (2-opt move)**.
   **Escalado adaptativo (anticoncentración, determinista por regla):**
-- Si **no mejora** $best$ en $\tau=200$ generaciones: set $p\leftarrow \min(0.6, p+0.1)$ y $m\leftarrow \min(0.35, m+0.05)$ **durante** las próximas $T_{boost}=100$ generaciones.
+* Si **no mejora** $best$ en $\tau=200$ generaciones: set $p\leftarrow \min(0.6, p+0.1)$ y $m\leftarrow \min(0.35, m+0.05)$ **durante** las próximas $T_{boost}=100$ generaciones.
 
   **Output:** $MUT^{(t)}$.
 
@@ -127,8 +126,8 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 **Parámetros (determinados):**
 
-- $\text{maxIter}$ (obligatorio).
-- Estancamiento: si $best$ no mejora por $\tau=500$ generaciones, **parar**.
+* $\text{maxIter}$ (obligatorio).
+* Estancamiento: si $best$ no mejora por $\tau=500$ generaciones, **parar**.
   **Logs fijos por $t$:** $L_{best}^{(t)}$, índice del best, y métricas de diversidad (Hamming medio, $\text{std}(L)$).
 
   **Output:** historial y $best$ final.
@@ -139,15 +138,15 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 **Salida (obligatoria):**
 
-- Mapa con el tour final $\pi^*$ trazado sobre $(x_i,y_i)$.
-- Curva $t\mapsto L_{best}^{(t)}$.
+* Mapa con el tour final $\pi^*$ trazado sobre $(x_i,y_i)$.
+* Curva $t\mapsto L_{best}^{(t)}$.
 
   **Decisión:** **siempre** generar ambas figuras (no GIF si no es requisito estricto).
 
 ## Parámetros iniciales recomendados (determinados)
 
-- **Berlin52 ($n=52$):** $N=200$, $c=60%$, $m=20%$, $e=2%$, $s=30%$, torneo $k=3$, $p=0.3$, $\tau=200$, $\theta_H=0.2n$, $\theta_L=0.02\overline{L}$.
-- **Escala \~500 ciudades:** $N=600$, $c=65%$, $m=30%$, $p=0.4$, mismos umbrales pero revisar memoria ($D$ de $500\times500$).
+* **Berlin52 ($n=52$):** $N=200$, $c=60%$, $m=20%$, $e=2%$, $s=30%$, torneo $k=3$, $p=0.3$, $\tau=200$, $\theta_H=0.2n$, $\theta_L=0.02\overline{L}$.
+* **Escala \~500 ciudades:** $N=600$, $c=65%$, $m=30%$, $p=0.4$, mismos umbrales pero revisar memoria ($D$ de $500\times500$).
 
 ## Flujo por generación (obligatorio)
 
@@ -160,6 +159,6 @@ $L(\pi)=\sum_{k=1}^{n-1} d_{\pi_k,\pi_{k+1}}+d_{\pi_n,\pi_1}.$
 
 ## Complejidades (para tener claro el costo)
 
-- Construir $D$: $O(n^2)$ (una vez).
-- Evaluar población/iteración: $O(Nn)$.
-- OX/PMX/Mutación por individuo: $O(n)$ típico.&#x20;
+* Construir $D$: $O(n^2)$ (una vez).
+* Evaluar población/iteración: $O(Nn)$.
+* OX/PMX/Mutación por individuo: $O(n)$ típico.&#x20;
