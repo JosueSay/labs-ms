@@ -3,17 +3,15 @@
 Este algoritmo genético (AG) para TSP itera sobre generaciones construyendo una nueva población a partir de: sobrevivientes (S%), hijos por cruce (C%) y mutación pura (M%), con intensificación local (2-opt) y protección del mejor (elitismo). Dispone de **tres criterios de paro** que se evalúan **en cada generación**:
 
 * `--stall = s`
-
   * Si pasan **s** generaciones seguidas sin `best` nuevo -> **STOP** (motivo: `"stall"`).
+
 * `--timeLimit = T` (segundos)
-
   * Si `time.time() - t0 >= T` -> **STOP** (motivo: `"time"`), **independiente** de `stall`.
-* `--maxIter = G`
 
+* `--maxIter = G`
   * Si se alcanzan **G** generaciones -> **STOP** (motivo: `"maxIter"`).
 
-**Prioridad efectiva** (porque se chequean en cada gen):
-**tiempo excedido -> para**; si no, **stall excedido -> para**; si no, **si gen > maxIter -> para**.
+**Prioridad**: **tiempo excedido -> para**; si no, **stall excedido -> para**; si no, **si gen > maxIter -> para**.
 
 Las técnicas empleadas se resumen en las siguientes fases:
 
