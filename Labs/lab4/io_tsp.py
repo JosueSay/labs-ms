@@ -1,4 +1,3 @@
-# io_tsp.py
 import math
 from typing import List, Tuple
 
