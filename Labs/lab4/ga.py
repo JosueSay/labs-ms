@@ -1,4 +1,4 @@
-import random, time, os, math, statistics
+import random, time, os
 from typing import List, Callable, Dict
 from io_tsp import getDistance, parseTsp, buildDistanceMatrixCompressed, tourDistance
 from poblation import initPopulation, makeRandomTour
@@ -77,33 +77,6 @@ def apply2optOnce(t: List[int], n: int, vec: List[int]) -> bool:
         return True
     return False
 
-def _hamming(a: List[int], b: List[int]) -> int:
-    return sum(1 for i in range(len(a)) if a[i] != b[i])
-
-def _diversity_metrics(pop: List[List[int]], fitness: Callable[[List[int]], int]) -> Dict[str, float]:
-    """
-    Calcula:
-      - hamming_mean: promedio de Hamming en todas las parejas (muestra si N es grande).
-      - std_cost: desviación estándar de los costos en la población.
-    """
-    N = len(pop)
-    if N < 2:
-        return {"hamming_mean": 0.0, "std_cost": 0.0}
-    # Muestra limitada para O(N) si la población es grande
-    sample_idx = list(range(N))
-    if N > 80:
-        sample_idx = random.sample(sample_idx, 80)
-    pairs = 0
-    acc_h = 0
-    for i in range(len(sample_idx)):
-        for j in range(i+1, len(sample_idx)):
-            acc_h += _hamming(pop[sample_idx[i]], pop[sample_idx[j]])
-            pairs += 1
-    hmean = acc_h / pairs if pairs > 0 else 0.0
-    costs = [fitness(ind) for ind in pop]
-    stdc = statistics.pstdev(costs) if len(costs) > 1 else 0.0
-    return {"hamming_mean": hmean, "std_cost": stdc}
-
 def runGa(coordsPath: str,
           N: int = 300,
           maxIter: int = 1500,
@@ -116,18 +89,11 @@ def runGa(coordsPath: str,
           tournamentK: int = 5,
           useSCX: bool = True,
           twoOptProb: float = 0.05,
-          stallGenerations: int = 500,  # τ = 500 (Módulo K)
+          stallGenerations: int = 400,
           timeLimitSec: float = 0.0,
           recordImprovements: bool = False,
           framesDir: str = "frames",
           seed: int = 42) -> Dict:
-    """
-    Ejecuta el GA para TSP con:
-      - Módulo E: initPopulation con diversidad.
-      - Módulo J: ensamblaje generacional con elitismo + anti-clones.
-      - Módulo K: paro por maxIter/estancamiento/tiempo + logging de diversidad.
-      - Módulo L: frames en mejoras (saveFrame) y salida para plotResults.
-    """
     assert abs((survivorsFrac + crossoverFrac + mutationFrac) - 1.0) < 1e-6, "S%+C%+M% debe ser 1.0"
     if N < 10: raise ValueError("N muy pequeño (mínimo recomendado 10)")
     random.seed(seed)
@@ -158,17 +124,12 @@ def runGa(coordsPath: str,
         "-----------------------------------------------------------"
     )
 
-    # MÓDULO E — Inicialización con diversidad (80/20 + anti-concentración)
-    pop = initPopulation(n, vec, N, seedFrac=0.20)
+    pop = initPopulation(n, vec, N, seedFrac=0.25)
     pop.sort(key=fitness)
     best = pop[0][:]
     bestCost = fitness(best)
     history = [bestCost]
     events = [{"gen": 0, "bestCost": bestCost, "tour": best[:] }]
-    diversity_log = []
-
-    div = _diversity_metrics(pop, fitness)
-    diversity_log.append({"gen": 0, **div})
 
     print(f"\n[gen 0]\n\tbest:\t\t{bestCost}\n\tciudades:\t{n}\n-----------------------------------------------------------")
 
@@ -242,48 +203,22 @@ def runGa(coordsPath: str,
             for t in pool:
                 apply2optOnce(t, n, vec)
 
-        # =========================
-        # MÓDULO J — ENSAMBLAJE
-        #   1) Copiar élites.
-        #   2) Rellenar con mejores de S ∪ C ∪ M hasta N.
-        #   Anti-clones: si es idéntico a alguien ya en P(t+1), forzar UNA mutación.
-        # =========================
-        candidates = survivors + childrenC + childrenM
-        candidates.sort(key=fitness)
+        # nueva población
+        newPop = survivors[:] + childrenC + childrenM
+        # reinyectar elites
+        newPop[:elites] = pop[:elites]
 
-        newPop: List[List[int]] = []
-        # 1) ÉLITES (del pop anterior, ya ordenado)
-        elites_block = [ind[:] for ind in pop[:elites]]
-        newPop.extend(elites_block)
-
-        # 2) RELLENO con anti-clones
-        i = 0
-        while len(newPop) < N and i < len(candidates):
-            cand = candidates[i][:]
-            is_clone = any(cand == e for e in newPop)
-            if is_clone:
-                # mutación extra (una sola vez)
-                (mutateInsertion if random.random() < 0.7 else mutateSwap)(cand)
-                # si aún queda igual, lo omitimos para no entrar en lazo
-                if any(cand == e for e in newPop):
-                    i += 1
-                    continue
-            newPop.append(cand)
-            i += 1
-
-        # si faltan, rellenar con tours aleatorios
-        while len(newPop) < N:
-            newPop.append(makeRandomTour(n))
+        # ajuste de tamaño
+        if len(newPop) > N:
+            newPop = newPop[:N]
+        elif len(newPop) < N:
+            newPop += [makeRandomTour(n) for _ in range(N - len(newPop))]
 
         newPop.sort(key=fitness)
         pop = newPop
 
         currBest = pop[0]; currCost = fitness(currBest)
         history.append(min(history[-1], currCost))
-
-        # MÓDULO K — LOGGING de diversidad
-        div = _diversity_metrics(pop, fitness)
-        diversity_log.append({"gen": gen, **div})
 
         if currCost < bestCost:
             gap = bestCost - currCost
@@ -317,7 +252,5 @@ def runGa(coordsPath: str,
                        ("maxIter" if len(history)-1 >= maxIter else "unknown"))),
         "elapsedSec": elapsed,
         "gensDone": gens_done,
-        "genPerSec": (gens_done / elapsed) if elapsed > 0 else 0.0,
-        # logs Módulo K:
-        "diversity": diversity_log,  # [{gen, hamming_mean, std_cost}, ...]
+        "genPerSec": (gens_done / elapsed) if elapsed > 0 else 0.0
     }

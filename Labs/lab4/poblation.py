@@ -2,84 +2,98 @@ import random
 from typing import List
 from io_tsp import getDistance
 
-def hamming_distance(a: List[int], b: List[int]) -> int:
-    """Distancia de Hamming entre dos permutaciones."""
-    return sum(1 for x, y in zip(a, b) if x != y)
-
-def mean_hamming(pop: List[List[int]]) -> float:
-    """Hamming medio entre individuos (usa muestra si N es grande)."""
-    N = len(pop)
-    if N < 2:
-        return 0.0
-    idxs = random.sample(range(N), k=min(N, 80))
-    pairs = 0
-    acc = 0
-    for i in range(len(idxs) - 1):
-        a = pop[idxs[i]]
-        b = pop[idxs[i + 1]]
-        acc += hamming_distance(a, b)
-        pairs += 1
-    return (acc / pairs) if pairs > 0 else 0.0
-
 def makeRandomTour(n: int) -> List[int]:
-    """Genera un tour aleatorio (80% de la población inicial)."""
+    if n <= 0:
+        raise ValueError("n debe ser > 0")
     t = list(range(n))
     random.shuffle(t)
     return t
 
-def nearest_neighbor_seed(n: int, vec: List[int]) -> List[int]:
-    """Construye un tour heurístico con nearest-neighbor."""
+def nearestInsertionSeed(n: int, vec: List[int]) -> List[int]:
+    """
+    Variante con mantenimiento incremental de d_to_tour:
+    - d_to_tour[j] = min distancia de la ciudad j a cualquier ciudad del tour actual.
+    - Al insertar una ciudad c, solo actualizamos d_to_tour[j] = min(d_to_tour[j], d(j,c)).
+    """
+    if n < 3:
+        # Tours triviales
+        return list(range(n))
+
     start = random.randrange(n)
     tour = [start]
-    unused = set(range(n))
-    unused.remove(start)
-    curr = start
-    while unused:
-        nxt = min(unused, key=lambda j: getDistance(curr, j, n, vec))
-        tour.append(nxt)
-        unused.remove(nxt)
-        curr = nxt
+    remaining = set(range(n))
+    remaining.remove(start)
+
+    # segunda ciudad: más cercana a 'start'
+    nearest = min(remaining, key=lambda j: getDistance(start, j, n, vec))
+    tour.append(nearest)
+    remaining.remove(nearest)
+
+    # 'start' al final para evaluar inserciones en el lazo cerrado; se quita al final
+    tour.append(start)
+
+    # inicializar distancias mínimas al tour actual (start y nearest)
+    d_to_tour = {}
+    for j in remaining:
+        d_to_tour[j] = min(
+            getDistance(j, start, n, vec),
+            getDistance(j, nearest, n, vec)
+        )
+
+    while remaining:
+        # ciudad más "cercana" al tour (definición de nearest-insertion)
+        c = min(remaining, key=lambda j: d_to_tour[j])
+
+        # escoger mejor posición para insertar c (cheapest insertion)
+        best_pos, best_inc = 0, float("inf")
+        for k in range(len(tour) - 1):
+            i, j = tour[k], tour[k + 1]
+            inc = (getDistance(i, c, n, vec) +
+                   getDistance(c, j, n, vec) -
+                   getDistance(i, j, n, vec))
+            if inc < best_inc:
+                best_inc = inc
+                best_pos = k + 1
+
+        tour.insert(best_pos, c)
+        remaining.remove(c)
+
+        # actualizar d_to_tour sólo contra la ciudad recién insertada
+        for j in remaining:
+            dij = getDistance(j, c, n, vec)
+            if dij < d_to_tour[j]:
+                d_to_tour[j] = dij
+
+    tour.pop()  # quitar el 'start' duplicado del cierre
     return tour
 
-def strong_shuffle(t: List[int]) -> None:
-    """Aplica varios swaps/insertions para diversificar una semilla."""
-    L = len(t)
-    ops = max(3, L // 10)
-    for _ in range(ops):
-        if random.random() < 0.6:
-            i, j = sorted(random.sample(range(L), 2))
-            gene = t.pop(j)
-            t.insert(i, gene)
-        else:
-            i, j = random.sample(range(L), 2)
-            t[i], t[j] = t[j], t[i]
-
 def initPopulation(n: int, vec: List[int], N: int, seedFrac: float = 0.25) -> List[List[int]]:
-    """
-    MÓDULO E — Inicialización de población:
-      - 80% random tours.
-      - 20% semillas heurísticas NN con shuffle fuerte.
-      - Regla anti-concentración: rehacer últimos si hamming medio < 0.2n.
-    """
     if N <= 0:
-        return []
-    num_seed = max(1, int(N * 0.20))
-    num_rand = max(0, N - num_seed)
-    pop: List[List[int]] = []
-    for _ in range(num_rand):
-        pop.append(makeRandomTour(n))
-    for _ in range(num_seed):
-        t = nearest_neighbor_seed(n, vec)
-        strong_shuffle(t)
-        pop.append(t)
+        raise ValueError("N debe ser > 0")
+    # clamp seedFrac
+    seedFrac = max(0.0, min(1.0, float(seedFrac)))
 
-    theta_H = int(0.2 * n)
-    for _ in range(3):  # intentar hasta 3 veces aumentar diversidad
-        mh = mean_hamming(pop)
-        if mh >= theta_H:
-            break
-        k = max(1, int(0.1 * N))
-        for i in range(1, k + 1):
-            pop[-i] = makeRandomTour(n)
+    # (opcional) limitar seeds cuando n es grande para evitar coste alto
+    # p. ej.: seedFrac = min(seedFrac, 0.25 if n < 200 else 0.10)
 
-    return pop
+    k = max(1, int(N * seedFrac))
+    pop = [nearestInsertionSeed(n, vec) for _ in range(k)]
+    pop += [makeRandomTour(n) for _ in range(N - k)]
+
+    # deduplicar (mantener orden) y rellenar con tours aleatorios distintos
+    seen = set()
+    uniq = []
+    for t in pop:
+        key = tuple(t)
+        if key not in seen:
+            seen.add(key)
+            uniq.append(t)
+
+    while len(uniq) < N:
+        t = makeRandomTour(n)
+        key = tuple(t)
+        if key not in seen:
+            seen.add(key)
+            uniq.append(t)
+
+    return uniq
