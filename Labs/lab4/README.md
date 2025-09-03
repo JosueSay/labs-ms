@@ -42,7 +42,7 @@
 * **optimal.py**
   * Script auxiliar para graficar la ruta óptima que provee el problema (usa utilidades de `io_tsp.py` y `viz.py`). Útil para comparar vs. el mejor tour encontrado por el GA.
 
-## Instalación rápida
+## Instalación
 
 ```bash
 pip install -r requirements.txt
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 | `--estimate`   | int   |             >= 1 |                   0 | Corre *warmup* N gen para estimar tiempo total y termina. |
 | `--noPlot`     | flag  |               —  |                 off | No mostrar la figura final.                               |
 
-**Notas clave**
+**Notas clave:**
 
 * **Matriz simétrica**: no se recorre la matriz completa; se usa triángulo superior comprimido y *lookups* `getDistance(i,j)`.
 * **SCX vs OX**: SCX = cruce sesgado por distancias (suele escalar mejor); OX = clásico de orden.
@@ -88,3 +88,15 @@ python main.py --N 600 --maxIter 200000 --survivors 0.10 --crossover 0.80 --muta
 ```
 
 > **Sugerencia:** si se desea GIF se debe añadir `--record --framesDir frames --gifOut berlin52_tsp_optimal.gif`.
+>
+> Este comando hará un estimado del tiempo en correr para correr todas las iteraciones se deben eliminar del comando los parametros `--estimate 300 --noPlot`
+
+## Resultados
+
+**Gráfica de costos y solución óptima:**
+
+![Solución óptima](./images/ga_result.png)
+
+**GIF del proceso seguido por el algoritmo genético:**
+
+![Solución óptima](./images/berlin52_tsp_optimal.gif)
