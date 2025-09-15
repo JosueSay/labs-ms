@@ -68,14 +68,14 @@ Ese fue el caso en tus gráficas (usaste `useUnitField=True`).
 
 ### 5. Ejemplos implementados
 
-1. **$y' = x y$:**
+1. **$y' = y$:**
 
     ![EDO 1](../images/campo1.png)
 
-2. **$y' = -x y$:**
+2. **$y' = 1 - y$:**
 
     ![EDO 2](../images/campo2.png)
 
-3. **$y' = x - y$:**
+3. **$y' = sin(x)$:**
 
     ![EDO 3](../images/campo3.png)
