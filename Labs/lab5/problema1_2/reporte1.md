@@ -17,8 +17,65 @@ Se sugiere implementar la construcción del campo a través de una función auxi
 ```python
 def F(x, y):
     return (expr1, expr2)
-````
+```
 
-donde `expr1` y `expr2` corresponden a las componentes del campo \$F(x,y)\$ que desea graficar.
+donde `expr1` y `expr2` corresponden a las componentes del campo $F(x,y)$ que desea graficar.
 
 Ilustrar los resultados de su función graficando dos campos vectoriales de su elección.
+
+## Procedimiento
+
+### 1. De la EDO al campo vectorial
+
+La ecuación diferencial de primer orden es de la forma
+
+$$
+\frac{dy}{dx} = f(x,y).
+$$
+
+Podemos representarla como un campo vectorial en el plano:
+
+$$
+F(x,y) = (1,\, f(x,y)).
+$$
+
+* La primera componente siempre es **1** -> significa que avanzamos en el eje $x$.
+* La segunda componente es el valor de la pendiente en $(x,y)$.
+
+Así, cada punto del plano recibe una flecha que indica la dirección de la curva solución en ese punto.
+
+### 2. Normalización de vectores
+
+Si usamos directamente $F(x,y)$, algunas flechas pueden salir muy largas o muy cortas.
+Por eso, calculamos el vector unitario equivalente:
+
+$$
+\hat{F}(x,y) = \frac{(1, f(x,y))}{\sqrt{1 + f(x,y)^2}}.
+$$
+
+Esto asegura que todas las flechas tengan la misma longitud, pero con la dirección correcta.
+Ese fue el caso en tus gráficas (usaste `useUnitField=True`).
+
+### 3. Construcción del grid
+
+* Usamos `numpy.linspace` para crear subdivisiones uniformes en los intervalos $[x_{\min}, x_{\max}]$ y $[y_{\min}, y_{\max}]$.
+* Luego `numpy.meshgrid` genera la rejilla bidimensional de puntos donde evaluamos $F(x,y)$.
+
+### 4. Visualización
+
+* `matplotlib.pyplot.quiver`: dibuja las flechas del campo direccional.
+* `matplotlib.pyplot.streamplot`: esto se ve en el primer gráfico donde se pueden ver líneas de flujo, que siguen las trayectorias solución.
+
+### 5. Ejemplos implementados
+
+1. **$y' = x y$:**
+
+    ![EDO 1](../images/campo1.png)
+
+2. **$y' = -x y$:**
+
+    ![EDO 2](../images/campo2.png)
+
+3. **$y' = x - y$:**
+
+    ![EDO 3](../images/campo3.png)
