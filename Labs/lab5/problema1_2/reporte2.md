@@ -80,7 +80,7 @@ $$
 
 ### Solución de la EDO
 
-Ecuación **separable**:
+Ecuación separable:
 
 $$
 \frac{dy}{y}=-x\,dx
@@ -139,7 +139,7 @@ Esto genera curvas en forma de "U" arriba del eje $x$ y curvas invertidas debajo
 
 ### Solución de la EDO
 
-Ecuación **separable** (partimos de $y'=xy$ $\Leftrightarrow$ $\frac{dy}{dx}=x\,y$):
+Ecuación separable (partimos de $y'=xy$ $\Leftrightarrow$ $\frac{dy}{dx}=x\,y$):
 
 $$
 \frac{dy}{y}=x\,dx
@@ -163,6 +163,95 @@ donde $C\in\mathbb{R}$ (incluye $y\equiv 0$ con $C=0$).
 
 ## $x\,dx + y\,dy = 0$
 
+### Esbozo mediante método de isóclinas
+
+1. **Pasa a forma normal**
+
+    $$
+    \frac{dy}{dx}=-\frac{x}{y}=f(x,y).
+    $$
+
+    > $y\neq 0$.
+
+2. **Definir isóclinas** $f(x,y)=c$
+
+    $$
+    -\frac{x}{y}=c\;\;\Longrightarrow\;\; y=-\frac{x}{c}.
+    $$
+
+    Son rectas que pasan por el origen; cada recta tiene pendiente constante $c$ para las soluciones. Ejemplos:
+
+    - $c=1$: $y=-x$
+    - $c=2$: $y=-\tfrac{x}{2}$
+    - $c=-1$: $y=x$
+    - $c=-2$: $y=\tfrac{x}{2}$
+
+3. **Dibujo del campo**
+
+    ![Esbozo solución EDO](../images/p2_esb3.png)
+
+### Solución de la EDO
+
+Ecuación separable (a partir de $x\,dx + y\,dy = 0$ o, en forma normal, $y'=-x/y$):
+
+$$
+y\,dy=-x\,dx
+\;\;\Rightarrow\;\;
+\int y\,dy=\int -x\,dx
+\;\;\Rightarrow\;\;
+\frac{y^{2}}{2}=-\,\frac{x^{2}}{2}+C.
+$$
+
+Multiplicando por 2 y reacomodando:
+
+$$
+\boxed{\,x^{2}+y^{2}=C_1\,}
+$$
+
+![Solución EDO](../images/p2_edo3.png)
+
 ## $y\,dx + x\,dy = 0$
+
+### Esbozo mediante método de isóclinas
+
+1. **Pasa a forma normal**
+
+   $$
+   \frac{dy}{dx}=-\frac{y}{x}=f(x,y), \qquad x\neq 0.
+   $$
+
+2. **Isóclinas** $f(x,y)=c$
+
+   $$
+   -\frac{y}{x}=c \;\;\Longrightarrow\;\; y=-c\,x.
+   $$
+
+   Son rectas por el origen; en cada recta la pendiente de las soluciones es la constante $c$.
+   Ejemplos:
+   - $c=-1 \Rightarrow y = x$
+   - $c=-0.5 \Rightarrow y = 0.5\,x$
+   - $c=1 \Rightarrow y = -x$
+   - $c=0.5 \Rightarrow y = -0.5\,x$
+
+3. **Dibujo del campo**
+
+    ![Esbozo solución EDO](../images/p2_esb4.png)
+
+### Solución de la EDO
+
+Ecuación separable:
+
+$$
+y\,dx + x\,dy=0 \;\;\Longleftrightarrow\;\; d(xy)=0
+\;\;\Rightarrow\;\; \boxed{\,xy=C\,}.
+$$
+
+**Forma explícita:**
+
+$$
+\boxed{\,y(x)=\frac{C}{x}\,},\quad x\neq 0.
+$$
+
+![Solución EDO](../images/p2_edo4.png)
 
 ## $\dfrac{dy}{dx} = y^2 - y$
