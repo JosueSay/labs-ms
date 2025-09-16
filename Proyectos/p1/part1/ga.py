@@ -1,10 +1,10 @@
 import random, time, os
-from typing import List, Callable, Dict
+from typing import Callable
 from io_tsp import getDistance, parseTsp, buildDistanceMatrixCompressed, tourDistance
 from poblation import initPopulation, makeRandomTour
 from viz import saveFrame
 
-def selectionTournament(pop: List[List[int]], fitness: Callable[[List[int]], int], k: int, num: int) -> List[List[int]]:
+def selectionTournament(pop: list[list[int]], fitness: Callable[[list[int]], int], k: int, num: int) -> list[list[int]]:
     sel = []
     for _ in range(num):
         cand = random.sample(pop, k)
@@ -12,7 +12,7 @@ def selectionTournament(pop: List[List[int]], fitness: Callable[[List[int]], int
         sel.append(cand[0][:])
     return sel
 
-def crossoverOX(p1: List[int], p2: List[int]) -> List[int]:
+def crossoverOX(p1: list[int], p2: list[int]) -> list[int]:
     n = len(p1)
     a, b = sorted(random.sample(range(n), 2))
     child = [-1]*n
@@ -24,7 +24,7 @@ def crossoverOX(p1: List[int], p2: List[int]) -> List[int]:
             child[i] = fill[idx]; idx += 1
     return child
 
-def crossoverSCX(p1: List[int], p2: List[int], n: int, vec: List[int]) -> List[int]:
+def crossoverSCX(p1: list[int], p2: list[int], n: int, vec: list[int]) -> list[int]:
     current = p1[0]
     child = [current]
     unused = set(range(n)) - {current}
@@ -43,17 +43,17 @@ def crossoverSCX(p1: List[int], p2: List[int], n: int, vec: List[int]) -> List[i
         current = nxt
     return child
 
-def mutateInsertion(t: List[int]) -> None:
+def mutateInsertion(t: list[int]) -> None:
     n = len(t)
     i, j = sorted(random.sample(range(n), 2))
     gene = t.pop(j)
     t.insert(i, gene)
 
-def mutateSwap(t: List[int]) -> None:
+def mutateSwap(t: list[int]) -> None:
     i, j = random.sample(range(len(t)), 2)
     t[i], t[j] = t[j], t[i]
 
-def apply2optOnce(t: List[int], n: int, vec: List[int]) -> bool:
+def apply2optOnce(t: list[int], n: int, vec: list[int]) -> bool:
     best_delta = 0
     best_move = None
     L = len(t)
@@ -93,7 +93,7 @@ def runGa(coordsPath: str,
           timeLimitSec: float = 0.0,
           recordImprovements: bool = False,
           framesDir: str = "frames",
-          seed: int = 42) -> Dict:
+          seed: int = 42) -> dict:
     assert abs((survivorsFrac + crossoverFrac + mutationFrac) - 1.0) < 1e-6, "S%+C%+M% debe ser 1.0"
     if N < 10: raise ValueError("N muy pequeño (mínimo recomendado 10)")
     random.seed(seed)

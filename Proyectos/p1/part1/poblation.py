@@ -1,15 +1,14 @@
 import random
-from typing import List
 from io_tsp import getDistance
 
-def makeRandomTour(n: int) -> List[int]:
+def makeRandomTour(n: int) -> list[int]:
     if n <= 0:
         raise ValueError("n debe ser > 0")
     t = list(range(n))
     random.shuffle(t)
     return t
 
-def nearestInsertionSeed(n: int, vec: List[int]) -> List[int]:
+def nearestInsertionSeed(n: int, vec: list[int]) -> list[int]:
     """
     Variante con mantenimiento incremental de d_to_tour:
     - d_to_tour[j] = min distancia de la ciudad j a cualquier ciudad del tour actual.
@@ -67,7 +66,7 @@ def nearestInsertionSeed(n: int, vec: List[int]) -> List[int]:
     tour.pop()  # quitar el 'start' duplicado del cierre
     return tour
 
-def initPopulation(n: int, vec: List[int], N: int, seedFrac: float = 0.25) -> List[List[int]]:
+def initPopulation(n: int, vec: list[int], N: int, seedFrac: float = 0.25) -> list[list[int]]:
     if N <= 0:
         raise ValueError("N debe ser > 0")
     # clamp seedFrac

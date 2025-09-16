@@ -1,5 +1,4 @@
 import math
-from typing import List, Tuple
 
 def triIndex(i: int, j: int, n: int) -> int:
     """
@@ -19,12 +18,12 @@ def euc2d_rounded(xi: float, yi: float, xj: float, yj: float) -> int:
     d = math.hypot(dx, dy)
     return int(d + 0.5)
 
-def parseTsp(path: str) -> Tuple[str, List[Tuple[float, float]]]:
+def parseTsp(path: str) -> tuple[str, list[tuple[float, float]]]:
     """
     Parser mínimo para instancias TSPLIB con NODE_COORD_SECTION (EUC_2D).
     """
     name = "instance"
-    coords: List[Tuple[float, float]] = []
+    coords: list[tuple[float, float]] = []
     with open(path, "r", encoding="utf-8") as f:
         mode = "header"
         for line in f:
@@ -47,7 +46,7 @@ def parseTsp(path: str) -> Tuple[str, List[Tuple[float, float]]]:
                     coords.append((x, y))
     return name, coords
 
-def buildDistanceMatrixCompressed(coords: List[Tuple[float, float]]) -> Tuple[int, List[int]]:
+def buildDistanceMatrixCompressed(coords: list[tuple[float, float]]) -> tuple[int, list[int]]:
     """
     Construye vector comprimido del triángulo superior (simétrico) con EUC_2D TSPLIB.
     """
@@ -60,7 +59,7 @@ def buildDistanceMatrixCompressed(coords: List[Tuple[float, float]]) -> Tuple[in
             vec[triIndex(i, j, n)] = d
     return n, vec
 
-def getDistance(i: int, j: int, n: int, vec: List[int]) -> int:
+def getDistance(i: int, j: int, n: int, vec: list[int]) -> int:
     """Lookup O(1) en la matriz simétrica comprimida."""
     if i == j:
         return 0
@@ -68,7 +67,7 @@ def getDistance(i: int, j: int, n: int, vec: List[int]) -> int:
         i, j = j, i
     return vec[triIndex(i, j, n)]
 
-def tourDistance(tour: List[int], n: int, vec: List[int]) -> int:
+def tourDistance(tour: list[int], n: int, vec: list[int]) -> int:
     """Costo de un tour cerrado usando los lookups comprimidos."""
     s = 0
     for a, b in zip(tour, tour[1:]):

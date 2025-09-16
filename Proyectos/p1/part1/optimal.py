@@ -70,8 +70,8 @@ def graphResult(coords, tour, titulo="Solución TSP"):
     plt.show()
 
 if __name__ == "__main__":
-    ruta_tsp = "data/berlin52.tsp"
-    ruta_tour = "data/berlin52.opt.tour"
+    ruta_tsp = "data/eil101.tsp"
+    ruta_tour = "data/eil101.opt.tour"
 
     tour = readTourTSP(ruta_tour)
     coords = readCoordTSP(ruta_tsp)
@@ -79,4 +79,4 @@ if __name__ == "__main__":
     dist = resultDistance(coords, tour)
     print(f"Distancia total del tour: {dist}")
 
-    graphResult(coords, tour, f"berlin52 – tour óptimo ({dist})")
+    graphResult(coords, tour, f"eil101 – tour óptimo ({dist})")
