@@ -255,3 +255,110 @@ $$
 ![Solución EDO](../images/p2_edo4.png)
 
 ## $\dfrac{dy}{dx} = y^2 - y$
+
+### Diagrama de fase
+
+1. **Autónoma.**
+
+    $f(y)=y(y-1)$ depende solo de $y$ => aplica diagrama de fase en la recta $y$.
+
+2. **Puntos de equilibrio.**
+
+    Resolver $f(y)=0\Rightarrow y=0,\;y=1$.
+
+3. **Tabla de signos (línea de fase).**
+
+    | Intervalo     | Valor prueba | $f(y)=y(y-1)$ | Dirección |
+    | ------------- | ------------ | ------------- | --------- |
+    | $(-\infty,0)$ | $y=-1$       | $+$           | arriba    |
+    | $(0,1)$       | $y=0.5$      | $−$           | abajo     |
+    | $(1,\infty)$  | $y=2$        | $+$           | arriba    |
+
+4. **Clasificación de equilibrios.**
+
+    - $y=0$: **atractor (estable)**, flechas llegan desde arriba y abajo.
+    - $y=1$: **repulsor (inestable)**, flechas se alejan a ambos lados.
+
+5. **Validez (existencia–unicidad).**
+
+    $f$ es polinómica => $f$ y $f_y$ continuas en todo $\mathbb{R}$ => soluciones **únicas** y no se cruzan; el diagrama es consistente.
+
+    ![Esbozo solución EDO](../images/p2_esb5.png)
+
+### Solución de la EDO
+
+Ecuación separable (partimos de $y'=y^2-y$):
+
+$$
+\frac{dy}{dx}=y(y-1)
+\;\Rightarrow\;
+\frac{dy}{y(y-1)}=dx.
+$$
+
+**Fracciones parciales:**
+
+$$
+\frac{1}{y(y-1)}=\frac{-1}{y}+\frac{1}{y-1}.
+$$
+
+**Integramos:**
+
+$$
+\int\!\Big(\!-\frac{1}{y}+\frac{1}{y-1}\Big)\,dy=\int dx
+\;\Rightarrow\;
+-\ln|y|+\ln|y-1|=x+C.
+$$
+
+**Reordenamos y exponenciamos:**
+
+$$
+\ln\Big|\frac{y-1}{y}\Big|=x+C
+\;\Rightarrow\;
+\frac{y-1}{y}=K\,e^{x}.
+$$
+
+**Despeje de $y$:**
+
+$$
+1-\frac{1}{y}=K e^{x}
+\;\Rightarrow\;
+\frac{1}{y}=1-K e^{x}
+\;\Rightarrow\;
+\boxed{\,y(x)=\frac{1}{\,1+K e^{x}\,}\,},\quad K\in\mathbb{R}.
+$$
+
+![Solución EDO](../images/p2_edo5.png)
+
+## Discusión y comparación
+
+**1. $y'=-xy$**
+
+- **Boceto vs. analítica:** $y=C\,e^{-x^2/2}$ tiene tangente horizontal en $x=0$ y simetría par en $x$, tal como sugieren las flechas.
+- **Concavidad:** $y''=y(x^2-1)$ -> cambio en $x=\pm1$ observado en el esbozo.
+- **Teorema E. & U.:** $f$ y $f_y$ continuas => las trayectorias no se cruzan; las curvas coinciden.
+
+**2. $y'=xy$**
+
+- **Boceto vs. analítica:** $y=C\,e^{x^2/2}$ crece rápido para $|x|$ grande, con tangente horizontal en $x=0$; el campo muestra crecimiento en I y III y descenso en II y IV, consistente.
+- **Concavidad:** $y''=y(1+x^2)$ -> arriba cóncava ↑, abajo cóncava ↓, como en el esbozo.
+- **Teorema E. & U.:** global; coincidencia total.
+
+**3. $x\,dx+y\,dy=0$**
+
+- **Boceto (isóclinas) vs. analítica:** la familia $x^2+y^2=C$ (circunferencias) es coherente con isóclinas radiales $y=-x/c$: sobre cada recta la pendiente es constante $c$ y las tangentes a los círculos cumplen $y'=-x/y$.
+
+**4. $y\,dx+x\,dy=0$**
+
+- **Boceto (isóclinas) vs. analítica:** $xy=C$ (hipérbolas rectangulares) concuerda con isóclinas $y=-c\,x$. En el campo, sobre $y=0$ se ven pendientes 0; en $x=0$ la forma normal no define $y'$, y la familia implícita incluye la recta vertical $x=0$ cuando $C=0$.
+- **Coincidencia:** las ramas y asintotas a los ejes concuerdan con el esbozo.
+
+**5. $y'=y^2-y$** (autónoma)
+
+- **Diagrama de fase vs. analítica:** $y(x)=\frac{1}{1+K e^{x}}$ más $y\equiv0,1$. El diagrama predijo $y=0$ **atractor** y $y=1$ **repulsor**:
+
+  - Si $0<y_0<1$: la solución **desciende** a 0 (hacia $+\infty$) y **tiende** a 1 (hacia $-\infty$).
+  - Si $y_0>1$ o $y_0<0$: la solución **sube**.
+- **Teorema E. & U.:** polinómica => unicidad global; el campo/diagrama y las fórmulas coinciden.
+
+**Conclusión general.**
+Los esbozos cualitativos (campo de pendientes, isóclinas y diagrama de fase) predicen correctamente la forma, concavidad, equilibrios y singularidades de las soluciones analíticas.
