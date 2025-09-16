@@ -43,14 +43,19 @@ def readCoordTSP(ruta_tsp):
                 coords[i] = (x, y)
     return coords
 
+def tspDistance(a, b):
+    # distancia TSPLIB EUC_2D (redondeada)
+    xd = a[0] - b[0]
+    yd = a[1] - b[1]
+    return int(round(math.sqrt(xd*xd + yd*yd)))
+
 def resultDistance(coords, tour):
-    """Calcula la distancia total euclidiana del tour (ciclo cerrado)."""
-    total = 0.0
+    total = 0
     for i in range(len(tour)):
         a = coords[tour[i]]
-        b = coords[tour[(i + 1) % len(tour)]]  # siguiente, cerrando ciclo
-        total += math.dist(a, b)
-    return round(total, 2)
+        b = coords[tour[(i + 1) % len(tour)]]
+        total += tspDistance(a, b)
+    return total
 
 def graphResult(coords, tour, titulo="Solución TSP"):
     puntos = [coords[i] for i in tour] + [coords[tour[0]]]
