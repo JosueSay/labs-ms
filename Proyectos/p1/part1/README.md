@@ -81,8 +81,6 @@ pip install -r requirements.txt
 
 ## Comando "óptimo"
 
-Estos parámetros dieron el mejor resultado en tus corridas (con `seed=42`):
-
 ```bash
 python main.py --N 600 --maxIter 200000 --survivors 0.10 --crossover 0.80 --mutation 0.10 --pc 0.98 --pm -1 --elitism 0.03 --k 3 --scx --twoOptProb 0.30 --stall 4000 --timeLimit 0 --seed 42 --estimate 300 --noPlot
 ```

@@ -99,8 +99,9 @@ def runGa(coordsPath: str,
     random.seed(seed)
     t0 = time.time()
 
-    name, coords = parseTsp(coordsPath)
-    n, vec = buildDistanceMatrixCompressed(coords)
+    name, edge_type, coords = parseTsp(coordsPath)
+    n, vec = buildDistanceMatrixCompressed(coords, edge_type)
+
     if pm is None:
         pm = max(1.0/n, 0.002)
 
