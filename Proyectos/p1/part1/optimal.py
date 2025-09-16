@@ -1,6 +1,8 @@
+import os
 import math
 import matplotlib.pyplot as plt
 
+# Lee un archivo .tour y devuelve la lista de nodos en el recorrido
 def readTourTSP(ruta_tour):
     tour = []
     in_section = False
@@ -19,6 +21,7 @@ def readTourTSP(ruta_tour):
             tour.append(int(line))
     return tour
 
+# Lee un archivo .tsp y devuelve las coordenadas de los nodos
 def readCoordTSP(ruta_tsp):
     coords = {}
     in_section = False
@@ -43,20 +46,22 @@ def readCoordTSP(ruta_tsp):
                 coords[i] = (x, y)
     return coords
 
+# Calcula distancia TSPLIB EUC_2D (redondeada a entero)
 def tspDistance(a, b):
-    # distancia TSPLIB EUC_2D (redondeada)
     xd = a[0] - b[0]
     yd = a[1] - b[1]
     return int(round(math.sqrt(xd*xd + yd*yd)))
 
+# Calcula la distancia total de un tour dado (ciclo cerrado)
 def resultDistance(coords, tour):
     total = 0
     for i in range(len(tour)):
         a = coords[tour[i]]
-        b = coords[tour[(i + 1) % len(tour)]]
+        b = coords[(tour[(i + 1) % len(tour)])]
         total += tspDistance(a, b)
     return total
 
+# Dibuja el tour en un gráfico con matplotlib
 def graphResult(coords, tour, titulo="Solución TSP"):
     puntos = [coords[i] for i in tour] + [coords[tour[0]]]
     xs = [p[0] for p in puntos]
@@ -75,18 +80,25 @@ def graphResult(coords, tour, titulo="Solución TSP"):
     plt.show()
 
 if __name__ == "__main__":
-    
-    ruta_tsp = "data/berlin52.tsp"
-    ruta_tour = "data/berlin52.opt.tour"
-    
-    # ruta_tsp = "data/eil101.tsp"
-    # ruta_tour = "data/eil101.opt.tour"
+    # Listar archivos en data/
+    data_dir = "data"
+    archivos = os.listdir(data_dir)
+    print("Archivos disponibles en data/:")
+    for idx, f in enumerate(archivos, 1):
+        print(f"{idx}. {f}")
 
+    # Selección por CLI
+    idx_tsp = int(input("\nNúmero de archivo .tsp: ")) - 1
+    idx_tour = int(input("Número de archivo .tour: ")) - 1
+
+    ruta_tsp = os.path.join(data_dir, archivos[idx_tsp])
+    ruta_tour = os.path.join(data_dir, archivos[idx_tour])
+
+    # Procesar
     tour = readTourTSP(ruta_tour)
     coords = readCoordTSP(ruta_tsp)
-
     dist = resultDistance(coords, tour)
-    print(f"Distancia total del tour: {dist}")
 
-    graphResult(coords, tour, f"berlin52 – tour óptimo ({dist})")
-    # graphResult(coords, tour, f"eil101 – tour óptimo ({dist})")
+    nombre = os.path.splitext(os.path.basename(ruta_tsp))[0]
+    print(f"\nDistancia total del tour: {dist}")
+    graphResult(coords, tour, f"{nombre} – tour ({dist})")
