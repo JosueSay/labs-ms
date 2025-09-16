@@ -70,12 +70,12 @@ Ese fue el caso en tus gráficas (usaste `useUnitField=True`).
 
 1. **$y' = y$:**
 
-    ![EDO 1](../images/campo1.png)
+    ![EDO 1](../images/p1_c1.png)
 
 2. **$y' = 1 - y$:**
 
-    ![EDO 2](../images/campo2.png)
+    ![EDO 2](../images/p1_c2.png)
 
 3. **$y' = sin(x)$:**
 
-    ![EDO 3](../images/campo3.png)
+    ![EDO 3](../images/p1_c3.png)

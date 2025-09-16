@@ -7,35 +7,159 @@ Luego, resolver cada EDO con los métodos aprendidos en sus cursos pasados, para
 >
 > 1. **Campo de pendientes**
 >
->    * Representar la EDO $y'=f(x,y)$ como el campo vectorial $F(x,y)=(1,f(x,y))$.
->    * Graficar flechas cortas que muestran la dirección local de las soluciones.
+>    - Representar la EDO $y'=f(x,y)$ como el campo vectorial $F(x,y)=(1,f(x,y))$.
+>    - Graficar flechas cortas que muestran la dirección local de las soluciones.
 > 2. **Análisis de signos de $f(x,y)$**
 >
->    * Si $f(x,y)>0$: la solución sube.
->    * Si $f(x,y)<0$: la solución baja.
->    * Si $f(x,y)=0$: hay solución constante o equilibrio.
+>    - Si $f(x,y)>0$: la solución sube.
+>    - Si $f(x,y)<0$: la solución baja.
+>    - Si $f(x,y)=0$: hay solución constante o equilibrio.
 > 3. **Análisis de concavidad**
 >
->    * Usar $y''=f_x+f f_y$.
->    * Si $y''>0$: cóncava hacia arriba.
->    * Si $y''<0$: cóncava hacia abajo.
->    * Si $y''=0$: punto de inflexión.
+>    - Usar $y''=f_x+f f_y$.
+>    - Si $y''>0$: cóncava hacia arriba.
+>    - Si $y''<0$: cóncava hacia abajo.
+>    - Si $y''=0$: punto de inflexión.
 > 4. **Método de las isóclinas**
 >
->    * Trazar curvas donde $f(x,y)=c$ es constante.
->    * Cada curva guía el campo de pendientes y muestra familias de trayectorias.
+>    - Trazar curvas donde $f(x,y)=c$ es constante.
+>    - Cada curva guía el campo de pendientes y muestra familias de trayectorias.
 > 5. **Diagramas de fase (para EDO autónomas)**
 >
->    * Identificar puntos de equilibrio (donde $f(y)=0$).
->    * Clasificarlos como atractores, repulsores o semiestables.
->    * Representar con flechas la dirección de las soluciones según el signo de $f(y)$.
+>    - Identificar puntos de equilibrio (donde $f(y)=0$).
+>    - Clasificarlos como atractores, repulsores o semiestables.
+>    - Representar con flechas la dirección de las soluciones según el signo de $f(y)$.
 > 6. **Teorema de existencia y unicidad** (como herramienta de validez)
 >
->    * Verificar continuidad de $f$ y $\partial f/\partial y$ para asegurar que las trayectorias no se crucen y la representación cualitativa tenga sentido.
+>    - Verificar continuidad de $f$ y $\partial f/\partial y$ para asegurar que las trayectorias no se crucen y la representación cualitativa tenga sentido.
 
 ## $y' = -xy$
 
+### Esbozo mediante campo de pendientes (con análisis de concavidad)
+
+- **Definir función:**
+
+$$
+f(x,y) = -xy
+$$
+
+- **Análisis de signo de $f(x,y)$:**
+
+  - Cuadrante I ($x>0, y>0$): $f<0$
+  - Cuadrante II ($x<0, y>0$): $f>0$
+  - Cuadrante III ($x<0, y<0$): $f<0$
+  - Cuadrante IV ($x>0, y<0$): $f>0$
+  - Sobre los ejes: $f=0$ (pendiente horizontal).
+
+- **Concavidad:**
+
+  $$
+  f_x + f f_y = -y + (-xy)(-x) = -y + x^2y = y(x^2 - 1)
+  $$
+
+  Factorizamos:
+
+  $$
+  f_x + f f_y = y(x+1)(x-1)
+  $$
+
+  Estudio de signos:
+
+  | Intervalo de $x$ | Signo de $(x+1)(x-1)$ | Resultado en $y>0$   | Resultado en $y<0$   |
+  | ------------------ | ----------------------- | ---------------------- | ---------------------- |
+  | $(-\infty,-1)$   | $+$                   | $+$ (cóncava arriba) | $-$ (cóncava abajo)  |
+  | $(-1,1)$         | $-$                   | $-$ (cóncava abajo)  | $+$ (cóncava arriba) |
+  | $(1,\infty)$     | $+$                   | $+$ (cóncava arriba) | $-$ (cóncava abajo)  |
+
+- Existen **puntos de inflexión** en $x=-1$ y $x=1$.
+- En la parte superior (cuando $y>0$), las curvas alternan entre concavidad hacia arriba y hacia abajo según los intervalos de $x$.
+- En la parte inferior (cuando $y<0$), ocurre lo opuesto.
+- La recta $y=0$ sigue siendo una solución constante.
+
+![Esbozo solución EDO](../images/p2_esb1.png)
+
+### Solución de la EDO
+
+Ecuación **separable**:
+
+$$
+\frac{dy}{y}=-x\,dx
+\;\;\Rightarrow\;\;
+\int\frac{1}{y}\,dy=\int -x\,dx
+\;\;\Rightarrow\;\;
+\ln|y|=-\frac{x^{2}}{2}+C
+$$
+
+Exponentiando:
+
+$$
+|y|=e^{C}\,e^{-x^{2}/2}\;\Rightarrow\; \boxed{\,y(x)=C\,e^{-x^{2}/2}\,}
+$$
+
+donde $C\in\mathbb{R}$ (incluye $y\equiv 0$ con $C=0$).
+
+![Solución EDO](../images/p2_edo1.png)
+
 ## $y' = xy$
+
+### Esbozo mediante campo de pendientes (con análisis de concavidad)
+
+Definimos:
+
+$$
+f(x,y) = xy
+$$
+
+- **Análisis de signo de $f(x,y)$:**
+
+  - Cuadrante I ($x>0, y>0$): $f>0$
+  - Cuadrante II ($x<0, y>0$): $f<0$
+  - Cuadrante III ($x<0, y<0$): $f>0$
+  - Cuadrante IV ($x>0, y<0$): $f<0$
+  - Sobre los ejes $x=0$ o $y=0$: $f=0$ (pendiente horizontal).
+
+- **Análisis de concavidad:**
+
+  $$
+  f_x + f f_y = y + (xy)(x) = y + x^2y = y(x^2+1)
+  $$
+
+  Como $x^2+1 > 0$ siempre, el signo depende de $y$:
+
+  - Si $y>0$: concavidad hacia arriba.
+  - Si $y<0$: concavidad hacia abajo.
+
+- En los cuadrantes I y II las curvas suben con concavidad hacia arriba.
+- En los cuadrantes III y IV las curvas suben con concavidad hacia abajo.
+- La recta $y=0$ es solución constante.
+
+Esto genera curvas en forma de "U" arriba del eje $x$ y curvas invertidas debajo del eje $x$.
+
+![Esbozo solución EDO](../images/p2_esb2.png)
+
+### Solución de la EDO
+
+Ecuación **separable** (partimos de $y'=xy$ $\Leftrightarrow$ $\frac{dy}{dx}=x\,y$):
+
+$$
+\frac{dy}{y}=x\,dx
+\;\;\Rightarrow\;\;
+\int \frac{1}{y}\,dy=\int x\,dx
+\;\;\Rightarrow\;\;
+\ln|y|=\frac{x^{2}}{2}+C.
+$$
+
+**Exponentiando:**
+
+$$
+|y|=e^{C}\,e^{x^{2}/2}\;=\;K\,e^{x^{2}/2},\quad K>0
+\;\;\Rightarrow\;\;
+\boxed{\,y(x)=C\,e^{x^{2}/2}\,}
+$$
+
+donde $C\in\mathbb{R}$ (incluye $y\equiv 0$ con $C=0$).
+
+![Solución EDO](../images/p2_edo2.png)
 
 ## $x\,dx + y\,dy = 0$
 
