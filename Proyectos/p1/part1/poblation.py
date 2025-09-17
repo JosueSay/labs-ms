@@ -71,6 +71,8 @@ def initPopulation(n: int, vec: list[int], N: int, seedFrac: float = 0.25) -> li
         raise ValueError("N debe ser > 0")
     # clamp seedFrac
     seedFrac = max(0.0, min(1.0, float(seedFrac)))
+    seedFrac = min(seedFrac, 0.25 if n < 200 else 0.10)
+
 
     # (opcional) limitar seeds cuando n es grande para evitar coste alto
     # p. ej.: seedFrac = min(seedFrac, 0.25 if n < 200 else 0.10)
