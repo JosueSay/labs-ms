@@ -1,11 +1,12 @@
 import math
+import numpy as np
 
 def triIndex(i: int, j: int, n: int) -> int:
     """
     Índice lineal del triángulo superior (i < j) en un vector de longitud n*(n-1)//2.
     Fórmula única para evitar duplicaciones y errores silenciosos.
+    Requiere: i < j.
     """
-    # Requiere i < j
     return i * (n - 1) - (i * (i - 1)) // 2 + (j - i - 1)
 
 def euc2d_rounded(xi: float, yi: float, xj: float, yj: float) -> int:
@@ -22,16 +23,17 @@ def degmin_to_rad(x: float) -> float:
     """
     Convierte un valor en grados.minutos (p. ej. 68.58 = 68° 58′) a radianes,
     según la convención de TSPLIB para EDGE_WEIGHT_TYPE = GEO.
+    Fórmula oficial TSPLIB: pi * (deg + 5.0 * minutes / 3.0) / 180.0
     """
     deg = int(x)
     minutes = x - deg
-    # Fórmula oficial TSPLIB: pi * (deg + 5.0 * minutes / 3.0) / 180.0
     return math.pi * (deg + 5.0 * minutes / 3.0) / 180.0
 
 def geo_distance(lat_i: float, lon_i: float, lat_j: float, lon_j: float) -> int:
     """
     Distancia geográfica TSPLIB (GEO).
     TSPLIB da las coordenadas como (lat, lon) en grados.minutos.
+    Implementa la fórmula con radio R=6378.388 y redondeo int(... + 1.0).
     """
     R = 6378.388
     phi_i = degmin_to_rad(lat_i)
@@ -51,7 +53,8 @@ def parseTsp(path: str) -> tuple[str, str, list[tuple[float, float]]]:
     - Devuelve (name, edge_weight_type, coords) donde:
         name: nombre de la instancia.
         edge_weight_type: 'EUC_2D' o 'GEO' (por ahora).
-        coords: lista de (x, y) para EUC_2D o (lon, lat) en formato grados.minutos para GEO.
+        coords: lista de (x, y) para EUC_2D o (lat, lon) en formato grados.minutos para GEO.
+      Nota: TSPLIB escribe 'index  x  y'; para GEO se interpreta como (lat, lon).
     """
     name = "instance"
     edge_weight_type = "EUC_2D"  # valor por defecto si no aparece en el archivo
@@ -102,23 +105,35 @@ def buildDistanceMatrixCompressed(coords: list[tuple[float, float]],
     Construye el vector comprimido del triángulo superior (simétrico) de la matriz de distancias.
     - El vector tiene longitud n*(n-1)//2 y almacena las distancias entre pares de nodos (i<j).
     - La indexación se hace con triIndex(i, j, n).
+    Rendimiento:
+      • EUC_2D: cálculo vectorizado en CPU con NumPy (float64) para respetar exactamente int(d+0.5).
+      • GEO: bucle CPU clásico (la fórmula domina el tiempo; n ≤ ~300 es suficiente).
     """
     n = len(coords)
-    vec = [0] * (n * (n - 1) // 2)
-    for i, (xi, yi) in enumerate(coords):
-        for j in range(i + 1, n):
-            xj, yj = coords[j]
-            if edge_weight_type == "GEO":
-                # En TSPLIB GEO, coords se interpretan como (lat, lon).
-                d = geo_distance(xi, yi, xj, yj)
-            else:
-                # Por defecto: EUC_2D (TSPLIB) con int(d + 0.5).
-                d = euc2d_rounded(xi, yi, xj, yj)
-            vec[triIndex(i, j, n)] = d
+
+    # GEO: bucle CPU (n <= 300 es suficiente)
+    if edge_weight_type == "GEO":
+        vec = [0] * (n * (n - 1) // 2)
+        for i, (xi, yi) in enumerate(coords):
+            for j in range(i + 1, n):
+                xj, yj = coords[j]
+                vec[triIndex(i, j, n)] = geo_distance(xi, yi, xj, yj)
+        return n, vec
+
+    # EUC_2D: vectorizado exacto TSPLIB con float64
+    xy = np.asarray(coords, dtype=np.float64)                 # [n,2]
+    diff = xy[:, None, :] - xy[None, :, :]                    # [n,n,2]
+    D2 = (diff * diff).sum(axis=2, dtype=np.float64)          # [n,n] suma en float64
+    D = np.sqrt(D2)                                           # sqrt en float64
+    Dr = np.floor(D + 0.5).astype(np.int32)                   # int(d+0.5)
+    vec = Dr[np.triu_indices(n, 1)].tolist()                  # empaquetar triángulo sup
     return n, vec
 
 def getDistance(i: int, j: int, n: int, vec: list[int]) -> int:
-    """Lookup O(1) en la matriz simétrica comprimida."""
+    """
+    Acceso O(1) a la distancia simétrica usando el vector comprimido.
+    Acepta i == j (devuelve 0) y corrige el orden si i > j.
+    """
     if i == j:
         return 0
     if i > j:
@@ -126,7 +141,10 @@ def getDistance(i: int, j: int, n: int, vec: list[int]) -> int:
     return vec[triIndex(i, j, n)]
 
 def tourDistance(tour: list[int], n: int, vec: list[int]) -> int:
-    """Costo de un tour cerrado usando los lookups comprimidos."""
+    """
+    Costo de un tour cerrado (ciclo Hamiltoniano) usando lookups comprimidos.
+    Suma las distancias entre pares consecutivos y cierra con el primer nodo.
+    """
     s = 0
     for a, b in zip(tour, tour[1:]):
         s += getDistance(a, b, n, vec)
