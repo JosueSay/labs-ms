@@ -39,6 +39,19 @@ def main():
     parser.add_argument("--estimate", type=int, default=0, help="n generaciones para estimar s/gen (no ejecuta el run completo)")
     parser.add_argument("--noPlot", action="store_true", help="no mostrar la figura final")
     parser.add_argument("--csv", type=str, default="", help="Ruta para escribir el trace CSV (opcional)")
+    parser.add_argument("--eaxFrac", type=float, default=0.15)
+    parser.add_argument("--edgeLambda", type=float, default=0.15)
+    parser.add_argument("--edgeTopFrac", type=float, default=0.30)
+    parser.add_argument("--edgeFreqPeriod", type=int, default=200)
+    grp_ass = parser.add_mutually_exclusive_group()
+    grp_ass.add_argument("--assortative", dest="assortative", action="store_true", default=True, help="emparejamiento por lejanía de aristas (ON por defecto)")
+    grp_ass.add_argument("--noAssortative", dest="assortative", action="store_false", help="desactiva el emparejamiento por lejanía de aristas")
+    parser.add_argument("--mem3OptSteps", type=int, default=4)
+    parser.add_argument("--speciesPeriod", type=int, default=800)
+    parser.add_argument("--speciesThresh", type=float, default=0.35)
+    parser.add_argument("--speciesCullFrac", type=float, default=0.20)
+    parser.add_argument("--catastropheFrac", type=float, default=0.20)
+    parser.add_argument("--noFlocking", action="store_true", help="desactiva tie-break flocking en 2-opt")
     args = parser.parse_args()
 
     # --- Validaciones tempranas de archivo ---
@@ -122,7 +135,19 @@ def main():
                     elitismFrac=elitism, tournamentK=k,
                     useSCX=args.scx, twoOptProb=twoOptProb,
                     stallGenerations=10**9, timeLimitSec=0,
-                    recordImprovements=False, framesDir="__noop__", seed=args.seed, trace_csv=args.csv)
+                    recordImprovements=False, framesDir="__noop__", seed=args.seed, trace_csv=args.csv,
+                    eaxFrac=args.eaxFrac,
+                    edgeLambda=args.edgeLambda,
+                    edgeTopFrac=args.edgeTopFrac,
+                    edgeFreqPeriod=args.edgeFreqPeriod,
+                    assortative=args.assortative,
+                    mem3OptSteps=args.mem3OptSteps,
+                    speciesPeriod=args.speciesPeriod,
+                    speciesThresh=args.speciesThresh,
+                    speciesCullFrac=args.speciesCullFrac,
+                    catastropheFrac=args.catastropheFrac,
+                    useFlocking=(not args.noFlocking))
+
         dt = res["elapsedSec"]
         gens = res["gensDone"]
         r = res["genPerSec"]
@@ -169,7 +194,20 @@ def main():
                 recordImprovements=args.record,
                 framesDir=args.framesDir,
                 seed=args.seed,
-                trace_csv=args.csv) 
+                trace_csv=args.csv,
+                eaxFrac=args.eaxFrac,
+                edgeLambda=args.edgeLambda,
+                edgeTopFrac=args.edgeTopFrac,
+                edgeFreqPeriod=args.edgeFreqPeriod,
+                assortative=args.assortative,
+                mem3OptSteps=args.mem3OptSteps,
+                speciesPeriod=args.speciesPeriod,
+                speciesThresh=args.speciesThresh,
+                speciesCullFrac=args.speciesCullFrac,
+                catastropheFrac=args.catastropheFrac,
+                useFlocking=(not args.noFlocking)
+                )
+
 
     # --- métricas de tiempo ---
     dt = res["elapsedSec"]

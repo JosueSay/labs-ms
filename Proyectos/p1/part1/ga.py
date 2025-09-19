@@ -10,17 +10,18 @@ from viz import saveFrame
 G_n = None
 G_vec = None
 G_neighbors = None
+G_useFlocking = True
 
-def initTwoOptGlobals(n, vec, neighbors):
+def initTwoOptGlobals(n, vec, neighbors, useFlocking=True):
     """Inicializador del pool de procesos (memoria compartida vía globals)."""
-    global G_n, G_vec, G_neighbors
-    G_n, G_vec, G_neighbors = n, vec, neighbors
+    global G_n, G_vec, G_neighbors, G_useFlocking
+    G_n, G_vec, G_neighbors, G_useFlocking = n, vec, neighbors, useFlocking
 
 def twoOptWorker(t):
     """Mejora local acotada (first-improve) en proceso separado."""
     t = t[:]
     for _ in range(12):
-        if not apply2optOnce(t, G_n, G_vec, neighbors=G_neighbors, first_improve=True):
+        if not apply2optOnce(t, G_n, G_vec, neighbors=G_neighbors, first_improve=True, useFlocking=G_useFlocking):
             break
     return t
 
@@ -53,22 +54,142 @@ def crossoverOX(p1: list[int], p2: list[int]) -> list[int]:
             child[i] = fill[idx]; idx += 1
     return child
 
-def crossoverSCX(p1: list[int], p2: list[int], n: int, vec: list[int]) -> list[int]:
-    """SCX con desempate determinista por índice para rutas con igual distancia."""
+# ======== Helpers de aristas / diversidad / emparejamiento ========
+def edgeKey(u, v):
+    return (u, v) if u < v else (v, u)
+
+def buildEdgeSet(tour):
+    n = len(tour)
+    E = []
+    for a, b in zip(tour, tour[1:]):
+        E.append(edgeKey(a, b))
+    E.append(edgeKey(tour[-1], tour[0]))
+    return frozenset(E)
+
+def jaccardEdgeDistance(Ea, Eb):
+    # 1 - |A∩B|/|A∪B|
+    inter = len(Ea & Eb)
+    union = len(Ea | Eb)
+    return 1.0 - (inter / union if union else 0.0)
+
+def buildEdgeHistogram(pop, topFrac=0.30):
+    """Frecuencia normalizada de aristas en el top de la población (ya ordenada)."""
+    top = max(1, int(len(pop) * topFrac))
+    freq = {}
+    for t in pop[:top]:
+        eSet = buildEdgeSet(t)
+        for e in eSet:
+            freq[e] = freq.get(e, 0) + 1
+    norm = float(top)
+    for k in list(freq.keys()):
+        freq[k] = freq[k] / norm
+    return freq
+
+def assortativePairs(parents, numPairs, edgeSets=None):
+    """Empareja por máxima lejanía de aristas (determinista por orden estable)."""
+    pairs = []
+    rem = parents[:]
+    if edgeSets is None:
+        edgeSets = {id(t): buildEdgeSet(t) for t in rem}
+    while len(pairs) < numPairs and len(rem) >= 2:
+        p1 = rem.pop(0)
+        e1 = edgeSets[id(p1)]
+        best = None
+        bestKey = None
+        for candidate in rem:
+            d = jaccardEdgeDistance(e1, edgeSets[id(candidate)])
+            key = (d, tuple(candidate))
+            if best is None or key > bestKey:
+                best, bestKey = candidate, key
+        rem.remove(best)
+        pairs.append((p1, best))
+    return pairs
+
+def eaxLite(p1: list[int], p2: list[int], n: int, vec: list[int], neighbors=None) -> list[int]:
+    """
+      - Alterna aristas de p1 y p2 (next/prev) para construir el hijo.
+      - Si los candidatos del padre activo están usados, intenta con el otro padre.
+      - Si sigue vacío, recurre a KNN; si aún así no hay, usa todos los no usados.
+      - Empates rotos por (dist, idx) para estabilidad.
+    """
+    # Adyacencias (siguiente y anterior) de ambos padres
+    next1 = {p1[i]: p1[(i + 1) % n] for i in range(n)}
+    prev1 = {p1[(i + 1) % n]: p1[i] for i in range(n)}
+    next2 = {p2[i]: p2[(i + 1) % n] for i in range(n)}
+    prev2 = {p2[(i + 1) % n]: p2[i] for i in range(n)}
+
+    child = [p1[0]]
+    used = {p1[0]}
+    cur = p1[0]
+    use_from_p1 = True  # alternamos entre p1 y p2
+
+    while len(child) < n:
+        cands = []
+
+        # 1) Intentar con el padre activo (next y prev)
+        if use_from_p1:
+            for nxt in (next1[cur], prev1[cur]):
+                if nxt not in used:
+                    cands.append(nxt)
+        else:
+            for nxt in (next2[cur], prev2[cur]):
+                if nxt not in used:
+                    cands.append(nxt)
+
+        # 2) Si vacío, intentar con el otro padre
+        if not cands:
+            if use_from_p1:
+                for nxt in (next2[cur], prev2[cur]):
+                    if nxt not in used:
+                        cands.append(nxt)
+            else:
+                for nxt in (next1[cur], prev1[cur]):
+                    if nxt not in used:
+                        cands.append(nxt)
+
+        # 3) Si vacío y hay KNN, tomar algunos vecinos no usados
+        if not cands and neighbors is not None:
+            cands = [j for j in neighbors[cur] if j not in used][:8]
+
+        # 4) Si aún vacío, caer a TODOS los no usados
+        if not cands:
+            unused = (set(range(n)) - used)
+            nxt = min(unused, key=lambda j: (getDistance(cur, j, n, vec), j))
+        else:
+            nxt = min(cands, key=lambda j: (getDistance(cur, j, n, vec), j))
+
+        child.append(nxt)
+        used.add(nxt)
+        cur = nxt
+        use_from_p1 = not use_from_p1  # alternar
+
+    return child
+
+# ======== SCX con Edge-Histogram ========
+def crossoverSCX(p1: list[int], p2: list[int], n: int, vec: list[int],
+                 edgeFreq=None, edgeLambda=0.15) -> list[int]:
+    """SCX con desempate determinista por índice, sesgado por histograma de aristas."""
     current = p1[0]
     child = [current]
     unused = set(range(n)) - {current}
     next1 = {p1[i]: p1[(i+1) % n] for i in range(n)}
     next2 = {p2[i]: p2[(i+1) % n] for i in range(n)}
+
+    def score(u, v):
+        base = getDistance(u, v, n, vec)
+        if edgeFreq:
+            base -= edgeLambda * edgeFreq.get(edgeKey(u, v), 0.0)
+        return (base, v)  # desempate por índice
+
     while unused:
         cands = []
         for nxt in (next1[current], next2[current]):
             if nxt in unused:
                 cands.append(nxt)
         if cands:
-            nxt = min(cands, key=lambda j: (getDistance(current, j, n, vec), j))
+            nxt = min(cands, key=lambda j: score(current, j))
         else:
-            nxt = min(unused, key=lambda j: (getDistance(current, j, n, vec), j))
+            nxt = min(unused, key=lambda j: score(current, j))
         child.append(nxt)
         unused.remove(nxt)
         current = nxt
@@ -86,10 +207,10 @@ def mutateSwap(t: list[int]) -> None:
     i, j = random.sample(range(len(t)), 2)
     t[i], t[j] = t[j], t[i]
 
-def apply2optOnce(t, n, vec, neighbors=None, first_improve=False):
-    """Un paso 2-opt. Con KNN opcional. Empates rotos por índice para estabilidad."""
+def apply2optOnce(t, n, vec, neighbors=None, first_improve=False, useFlocking=True):
+    """Un paso 2-opt. Con KNN opcional. Empates rotos por índice/“flocking” para estabilidad/calidad."""
     best_delta = 0
-    best_move = None
+    best_move = None  # (i1, j, tieScore)
     L = len(t)
     for i in range(L - 1):
         a, b = t[i], t[(i + 1) % L]
@@ -98,8 +219,14 @@ def apply2optOnce(t, n, vec, neighbors=None, first_improve=False):
             if neighbors is not None:
                 if not ((c in neighbors[a]) or (d in neighbors[a]) or (c in neighbors[b]) or (d in neighbors[b])):
                     continue
-            delta = (getDistance(a, c, n, vec) + getDistance(b, d, n, vec)
-                     - getDistance(a, b, n, vec) - getDistance(c, d, n, vec))
+            # delta y tie-break “flocking” (preferir menor arista añadida)
+            new1 = getDistance(a, c, n, vec)
+            new2 = getDistance(b, d, n, vec)
+            old1 = getDistance(a, b, n, vec)
+            old2 = getDistance(c, d, n, vec)
+            delta = (new1 + new2) - (old1 + old2)
+            tieScore = max(new1, new2) if useFlocking else 0
+
             if first_improve and delta < 0:
                 i1 = i + 1
                 if i1 < j:
@@ -109,10 +236,10 @@ def apply2optOnce(t, n, vec, neighbors=None, first_improve=False):
                     m = len(t) - i1
                     t[i1:] = seg[:m]; t[:j+1] = seg[m:]
                 return True
-            if delta < best_delta or (delta == best_delta and best_move and j < best_move[1]):
-                best_delta = delta; best_move = (i + 1, j)
+            if (delta < best_delta) or (delta == best_delta and best_move and tieScore < best_move[2]):
+                best_delta = delta; best_move = (i + 1, j, tieScore)
     if best_move:
-        i1, j = best_move
+        i1, j, _ = best_move
         if i1 < j:
             t[i1:j+1] = reversed(t[i1:j+1])
         else:
@@ -120,6 +247,41 @@ def apply2optOnce(t, n, vec, neighbors=None, first_improve=False):
             m = len(t) - i1
             t[i1:] = seg[:m]; t[:j+1] = seg[m:]
         return True
+    return False
+
+# ======== 3-opt ========
+def apply3optOnce(t, n, vec, neighbors=None):
+    """Una iteración 3-opt first-improve con KNN. Retorna True/False si aplicó."""
+    L = len(t)
+    # probamos dos variantes simples
+    for i in range(L - 2):
+        a, b = t[i], t[(i + 1) % L]
+        for j in range(i + 1, L - 1):
+            c, d = t[j % L], t[(j + 1) % L]
+            if neighbors is not None:
+                if (c not in neighbors[a]) and (d not in neighbors[a]) and (c not in neighbors[b]) and (d not in neighbors[b]):
+                    continue
+            for k in range(j + 1, L if i > 0 else L - 1):
+                e, f = t[k % L], t[(k + 1) % L]
+                # v1: revertir (b..c) y (d..e)
+                delta1 = (
+                    getDistance(a, c, n, vec) + getDistance(b, d, n, vec) + getDistance(e, f, n, vec)
+                    - getDistance(a, b, n, vec) - getDistance(c, d, n, vec) - getDistance(e, f, n, vec)
+                )
+                if delta1 < 0:
+                    i1 = i + 1
+                    t[i1:j+1] = reversed(t[i1:j+1])
+                    t[j+1:k+1] = reversed(t[j+1:k+1])
+                    return True
+                # v2: revertir (b..e)
+                delta2 = (
+                    getDistance(a, e, n, vec) + getDistance(b, f, n, vec) + getDistance(c, d, n, vec)
+                    - getDistance(a, b, n, vec) - getDistance(e, f, n, vec) - getDistance(c, d, n, vec)
+                )
+                if delta2 < 0:
+                    seg = t[i+1:k+1]; seg.reverse()
+                    t[i+1:k+1] = seg
+                    return True
     return False
 
 # ---------- Trace CSV ----------
@@ -156,7 +318,19 @@ def runGa(coordsPath: str,
           recordImprovements: bool = False,
           framesDir: str = "frames",
           seed: int = 42,
-          trace_csv: str | None = None) -> dict:
+          trace_csv: str | None = None,
+          eaxFrac: float = 0.15,
+          edgeLambda: float = 0.15,
+          edgeTopFrac: float = 0.30,
+          edgeFreqPeriod: int = 200,
+          assortative: bool = True,
+          mem3OptSteps: int = 4,
+          speciesPeriod: int = 800,
+          speciesThresh: float = 0.35,
+          speciesCullFrac: float = 0.20,
+          catastropheFrac: float = 0.20,
+          useFlocking: bool = True
+          ) -> dict:
 
     # ---------- Validaciones y semilla ----------
     assert abs((survivorsFrac + crossoverFrac + mutationFrac) - 1.0) < 1e-6, "S%+C%+M% debe ser 1.0"
@@ -205,7 +379,7 @@ def runGa(coordsPath: str,
     executor = ProcessPoolExecutor(
         max_workers=workers,
         initializer=initTwoOptGlobals,
-        initargs=(n, vec, neighbors)
+        initargs=(n, vec, neighbors, useFlocking)
     )
 
     # ---------- Reloj global ----------
@@ -214,11 +388,17 @@ def runGa(coordsPath: str,
     # ---------- Perfilador ----------
     prof = {
         "elitist_memetic": 0.0,
+        "memetic_3opt": 0.0,
         "selection": 0.0,
+        "assortative": 0.0,
         "crossover": 0.0,
+        "crossover_eax": 0.0,
         "mutation_pure": 0.0,
         "mutation_light": 0.0,
         "twoopt_pool": 0.0,
+        "edge_hist": 0.0,
+        "speciation": 0.0,
+        "catastrophe": 0.0,
         "anticlones": 0.0,
         "sort": 0.0,
     }
@@ -291,6 +471,32 @@ def runGa(coordsPath: str,
     M = max(0, N - S - C)
     elites = max(1, int(N * elitismFrac))
 
+    # ---------- Estado Edge-Histogram ----------
+    tEH0 = time.time()
+    edgeFreq = buildEdgeHistogram(pop, topFrac=edgeTopFrac)
+    prof["edge_hist"] += time.time() - tEH0
+    nextEdgeFreqUpdate = edgeFreqPeriod
+    edgeSetCache = {}  # cache para emparejamiento / especies
+
+    species = None
+    def rebuildSpecies():
+        nonlocal species
+        tSP0 = time.time()
+        reps = []  # [(rep_edgeSet, indices)]
+        species = []
+        for idx, t in enumerate(pop):
+            Et = edgeSetCache.get(id(t))
+            if Et is None:
+                Et = buildEdgeSet(t); edgeSetCache[id(t)] = Et
+            assigned = False
+            for k, (Er, members) in enumerate(reps):
+                if jaccardEdgeDistance(Et, Er) <= speciesThresh:
+                    members.append(idx); assigned = True; break
+            if not assigned:
+                reps.append((Et, [idx]))
+        species = [m for _, m in reps]
+        prof["speciation"] += time.time() - tSP0
+
     noImprove = 0
 
     try:
@@ -305,11 +511,19 @@ def runGa(coordsPath: str,
             if gen % 300 == 0:
                 tM0 = time.time()
                 for e in survivors[:2]:   # menos trabajo
-                    improved = True; steps = 0
-                    while improved and steps < 8:
-                        improved = apply2optOnce(e, n, vec, neighbors=neighbors, first_improve=True)
+                    # 2-opt
+                    steps = 0
+                    while steps < 8 and apply2optOnce(e, n, vec, neighbors=neighbors, first_improve=True, useFlocking=useFlocking):
                         steps += 1
                 prof["elitist_memetic"] += time.time() - tM0
+
+                # 3-opt acotado
+                t3o0 = time.time()
+                for e in survivors[:2]:
+                    steps3 = 0
+                    while steps3 < mem3OptSteps and apply3optOnce(e, n, vec, neighbors=neighbors):
+                        steps3 += 1
+                prof["memetic_3opt"] += time.time() - t3o0
 
             # ---------- Selección ----------
             parentsNeeded = max(C * 2, 2)
@@ -317,22 +531,39 @@ def runGa(coordsPath: str,
             parents = selectionTournament(pop, fitness, tournamentK, parentsNeeded)
             prof["selection"] += time.time() - tS0
 
+            # ---------- Emparejamiento assortative ----------
+            pairsNeeded = max(1, C)
+            tAS0 = time.time()
+            if assortative:
+                for t in parents:
+                    if id(t) not in edgeSetCache:
+                        edgeSetCache[id(t)] = buildEdgeSet(t)
+                pairs = assortativePairs(parents, pairsNeeded, edgeSets=edgeSetCache)
+            else:
+                pairs = [(parents[i % len(parents)], parents[(i + 1) % len(parents)]) for i in range(0, pairsNeeded)]
+            prof["assortative"] += time.time() - tAS0
+
             # ---------- Cruce ----------
             tC0 = time.time()
             childrenC = []
-            for i in range(0, parentsNeeded, 2):
-                p1, p2 = parents[i % len(parents)], parents[(i + 1) % len(parents)]
+            eaxBudget = int(eaxFrac * pairsNeeded)
+            tEAX = 0.0
+            for idx, (p1, p2) in enumerate(pairs):
                 if random.random() < pc:
-                    if useSCX and random.random() < 0.85:
-                        child = crossoverSCX(p1, p2, n, vec)
+                    if idx < eaxBudget:
+                        t0_eax = time.time()
+                        child = eaxLite(p1, p2, n, vec, neighbors)
+                        tEAX += (time.time() - t0_eax)
                     else:
-                        child = crossoverOX(p1, p2)
+                        if useSCX:
+                            child = crossoverSCX(p1, p2, n, vec, edgeFreq=edgeFreq, edgeLambda=edgeLambda)
+                        else:
+                            child = crossoverOX(p1, p2)
                 else:
                     child = p1[:]
                 childrenC.append(child)
-                if len(childrenC) >= C:
-                    break
             prof["crossover"] += time.time() - tC0
+            prof["crossover_eax"] += tEAX
 
             # ---------- Mutación pura ----------
             tMp0 = time.time()
@@ -360,16 +591,10 @@ def runGa(coordsPath: str,
                 if poolSize > 0:
                     candidates = sorted(childrenC + childrenM, key=lambda t: (fitness(t), tuple(t)))
                     poolTours = candidates[:poolSize]
-                    results = list(ProcessPoolExecutor.map(
-                        executor, twoOptWorker, poolTours
+                    results = list(executor.map(
+                        twoOptWorker, poolTours,
+                        chunksize=max(1, poolSize // (workers * 2))
                     ))
-
-                    if not results:
-                        results = list(executor.map(
-                            twoOptWorker, poolTours,
-                            chunksize=max(1, poolSize // (workers * 2))
-                        ))
-
                     # Reemplazo estable
                     where = {id(t): ('C', i) for i, t in enumerate(childrenC)}
                     where.update({id(t): ('M', i) for i, t in enumerate(childrenM)})
@@ -411,6 +636,17 @@ def runGa(coordsPath: str,
             prof["sort"] += time.time() - tSo0
             pop = newPop
 
+            # ---------- Actualización Edge-Histogram ----------
+            if edgeFreqPeriod > 0 and gen >= nextEdgeFreqUpdate:
+                tEH0 = time.time()
+                edgeFreq = buildEdgeHistogram(pop, topFrac=edgeTopFrac)
+                prof["edge_hist"] += time.time() - tEH0
+                nextEdgeFreqUpdate += edgeFreqPeriod
+
+            # ---------- Especiación periódica (NEW) ----------
+            if speciesPeriod > 0 and (gen % speciesPeriod) == 0:
+                rebuildSpecies()
+
             # ---------- Actualización de mejor ----------
             currBest = pop[0]
             currCost = fitness(currBest)
@@ -443,11 +679,53 @@ def runGa(coordsPath: str,
                     saveFrame(coords, best, history, os.path.join(framesDir, f"frame_{len(events):04d}.png"), title=name)
             else:
                 noImprove += 1
+                # Catástrofes
+                catPeriod = max(1, stallGenerations // 2)
+                if catastropheFrac > 0 and (noImprove % catPeriod) == 0:
+                    tCT0 = time.time()
+                    replaceK = max(1, int(N * catastropheFrac))
+                    worstIdx = list(range(len(pop)-replaceK, len(pop)))
+                    baseTour = best[:]  # determinista
+                    newOnes = []
+                    for _ in worstIdx:
+                        cand = doubleBridgeKick(baseTour[:])
+                        steps = 0
+                        while steps < 6 and apply2optOnce(cand, n, vec, neighbors=neighbors, first_improve=True, useFlocking=useFlocking):
+                            steps += 1
+                        newOnes.append(cand)
+                    for i, idxW in enumerate(worstIdx):
+                        pop[idxW] = newOnes[i]
+                    pop.sort(key=lambda t: (fitness(t), tuple(t)))
+                    noImprove = 0
+                    prof["catastrophe"] += time.time() - tCT0
+
+                # Extinción
+                if species and (gen % speciesPeriod) == 0 and len(species) > 1:
+                    tSPX0 = time.time()
+                    speciesScore = []
+                    for mems in species:
+                        bestIn = min((fitness(pop[i]) for i in mems))
+                        speciesScore.append((bestIn, mems))
+                    worstSpecies = max(speciesScore, key=lambda x: (x[0], len(x[1])))
+                    mems = sorted(worstSpecies[1], reverse=True)
+                    toKill = max(1, int(len(mems) * speciesCullFrac))
+                    for _ in range(toKill):
+                        idx = mems.pop(0) if mems else len(pop)-1
+                        tnew = makeRandomTour(n)
+                        steps = 0
+                        while steps < 6 and apply2optOnce(tnew, n, vec, neighbors=neighbors, first_improve=True, useFlocking=useFlocking):
+                            steps += 1
+                        pop[idx] = tnew
+                    pop.sort(key=lambda t: (fitness(t), tuple(t)))
+                    noImprove = 0
+                    prof["speciation"] += time.time() - tSPX0
+
+                # Kick periódico determinista (conservado)
                 if (noImprove % 3000) == 0:
                     cand = doubleBridgeKick(best[:])
                     changed = True
                     while changed:
-                        changed = apply2optOnce(cand, n, vec, neighbors=None, first_improve=False)
+                        changed = apply2optOnce(cand, n, vec, neighbors=None, first_improve=False, useFlocking=useFlocking)
                     cst = tourDistance(cand, n, vec)
                     if cst < bestCost:
                         best, bestCost, noImprove = cand, cst, 0
@@ -497,7 +775,7 @@ def runGa(coordsPath: str,
     # ---------- Finisher 2-opt global ----------
     changed = True
     while changed:
-        changed = apply2optOnce(best, n, vec, neighbors=None, first_improve=False)
+        changed = apply2optOnce(best, n, vec, neighbors=None, first_improve=False, useFlocking=useFlocking)
     bestCost = tourDistance(best, n, vec)
 
     # fila end
