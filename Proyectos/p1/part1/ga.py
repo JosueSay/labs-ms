@@ -435,6 +435,17 @@ def runGa(coordsPath: str,
         f"\tselección:\ttorneo k={tournamentK}\n"
         f"\tcruce:\t\t{'SCX' if useSCX else 'OX'}\n"
         f"\t2-optProb:\t{twoOptProb:.2f}\n"
+        f"\teaxFrac:\t{eaxFrac:.2f}\n"
+        f"\tedgeLambda:\t{edgeLambda:.2f}\n"
+        f"\tedgeTopFrac:\t{edgeTopFrac:.2f}\n"
+        f"\tedgeFreqPeriod:\t{edgeFreqPeriod}\n"
+        f"\tassortative:\t{assortative}\n"
+        f"\tmem3OptSteps:\t{mem3OptSteps}\n"
+        f"\tspeciesPeriod:\t{speciesPeriod}\n"
+        f"\tspeciesThresh:\t{speciesThresh:.2f}\n"
+        f"\tspeciesCullFrac:\t{speciesCullFrac:.2f}\n"
+        f"\tcatastropheFrac:\t{catastropheFrac:.2f}\n"
+        f"\tuseFlocking:\t{useFlocking}\n"
         "-----------------------------------------------------------"
     )
 
