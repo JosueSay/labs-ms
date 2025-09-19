@@ -38,6 +38,7 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--estimate", type=int, default=0, help="n generaciones para estimar s/gen (no ejecuta el run completo)")
     parser.add_argument("--noPlot", action="store_true", help="no mostrar la figura final")
+    parser.add_argument("--csv", type=str, default="", help="Ruta para escribir el trace CSV (opcional)")
     args = parser.parse_args()
 
     # --- Validaciones tempranas de archivo ---
@@ -121,7 +122,7 @@ def main():
                     elitismFrac=elitism, tournamentK=k,
                     useSCX=args.scx, twoOptProb=twoOptProb,
                     stallGenerations=10**9, timeLimitSec=0,
-                    recordImprovements=False, framesDir="__noop__", seed=args.seed)
+                    recordImprovements=False, framesDir="__noop__", seed=args.seed, trace_csv=args.csv)
         dt = res["elapsedSec"]
         gens = res["gensDone"]
         r = res["genPerSec"]
@@ -167,7 +168,8 @@ def main():
                 timeLimitSec=args.timeLimit,
                 recordImprovements=args.record,
                 framesDir=args.framesDir,
-                seed=args.seed)
+                seed=args.seed,
+                trace_csv=args.csv) 
 
     # --- métricas de tiempo ---
     dt = res["elapsedSec"]
