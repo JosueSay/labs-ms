@@ -107,7 +107,7 @@ def buildDistanceMatrixCompressed(coords: list[tuple[float, float]],
     - La indexación se hace con triIndex(i, j, n).
     Rendimiento:
       • EUC_2D: cálculo vectorizado en CPU con NumPy (float64) para respetar exactamente int(d+0.5).
-      • GEO: bucle CPU clásico (la fórmula domina el tiempo; n ≤ ~300 es suficiente).
+      • GEO: bucle CPU clásico (la fórmula domina el tiempo; n <= ~300 es suficiente).
     """
     n = len(coords)
 

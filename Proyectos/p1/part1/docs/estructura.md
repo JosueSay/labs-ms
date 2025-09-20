@@ -4,7 +4,7 @@
 
 * **Variable de decisión (tour):** una **permutación** $\pi = [\pi_1,\dots,\pi_n]$ de las $n$ ciudades.
 * **Espacio muestral (factible):** $\Omega = S_n$ (todas las permutaciones). Si fijas ciudad inicial: $|\Omega|=(n-1)!$.
-* **Restricciones embebidas:** en una permutación **no hay repetidos** y la longitud es $n$ → cada ciudad aparece **exactamente una vez**. El tour se cierra con $\pi_n \to \pi_1$.
+* **Restricciones embebidas:** en una permutación **no hay repetidos** y la longitud es $n$ -> cada ciudad aparece **exactamente una vez**. El tour se cierra con $\pi_n \to \pi_1$.
 * **Función objetivo (minimizar distancia total):**
 
   $$
@@ -15,7 +15,7 @@
 
 ## ¿Por qué **permutación** es la representación adecuada?
 
-1. **Validez por construcción:** toda cadena del espacio $S_n$ es un tour válido. No necesitas reparaciones ni restricciones extra para “una vez por ciudad”.
+1. **Validez por construcción:** toda cadena del espacio $S_n$ es un tour válido. No necesitas reparaciones ni restricciones extra para "una vez por ciudad".
 2. **Dimensión correcta del problema:** el TSP decide **orden** de visita, no valores numéricos de magnitud. La permutación modela **orden** directamente.
 3. **Operadores específicos bien definidos:** cruces y mutaciones como **PMX, OX, ERX, swap, insert, inversion/2-opt** preservan la validez (siguen siendo permutaciones).
 4. **Eficiencia del espacio:** $|S_n|=n!$. Puede ser grande, pero es **el** conjunto factible. Otras codificaciones incluyen muchos vectores **inválidos** (derroche de búsqueda).
@@ -25,7 +25,7 @@
 
 ### Binaria
 
-* Típica codificación binaria (por ejemplo, matriz de adyacencia) vive en $\{0,1\}^{n\times n}$ → **espacio = $2^{n^2}$**, dominado por **soluciones inválidas** (grados ≠ 2, subtours múltiples, etc.).
+* Típica codificación binaria (por ejemplo, matriz de adyacencia) vive en $\{0,1\}^{n\times n}$ -> **espacio = $2^{n^2}$**, dominado por **soluciones inválidas** (grados ≠ 2, subtours múltiples, etc.).
 * Requiere **muchas restricciones** (grado 2 por nodo, eliminación de subtours) o **reparaciones costosas** tras cada cruce/mutación.
 * Operadores binarios estándar rompen validez con facilidad.
 
@@ -36,7 +36,7 @@
 
 ### Float (reales)
 
-* No hay interpretación natural de un real para “orden de visita”.
+* No hay interpretación natural de un real para "orden de visita".
 * Tendrías que mapear floats a un orden (p. ej., ordenar por valor), lo que introduce **indirección, empates y ruido**; además, los operadores de cruce/mutación de floats **no respetan** estructura de tour.
 
 ## Conclusión breve

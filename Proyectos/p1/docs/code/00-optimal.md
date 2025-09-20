@@ -79,4 +79,4 @@ python optimal.py
 * Lee solo instancias con **`NODE_COORD_SECTION`**; no maneja `EDGE_WEIGHT_SECTION`.
 * Soporta **EUC_2D** y **GEO**; otras métricas no están implementadas.
 * Se asume que el `.tour` es **válido** para el `.tsp` (mismo conjunto de IDs). No hay validaciones cruzadas extensas.
-* El sistema de ejes es **cartesiano (Y hacia arriba)**. Si tus `.tsp` provienen de imágenes, asegúrate de haber **convertido** coordenadas desde el sistema de imagen (PIL Y-down) al exportar, para que la forma no salga “invertida”.
+* El sistema de ejes es **cartesiano (Y hacia arriba)**. Si tus `.tsp` provienen de imágenes, asegúrate de haber **convertido** coordenadas desde el sistema de imagen (PIL Y-down) al exportar, para que la forma no salga "invertida".

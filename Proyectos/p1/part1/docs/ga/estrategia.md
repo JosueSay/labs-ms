@@ -38,7 +38,7 @@
 * **Generar simulación visual** que grafique el recorrido *best-so-far* por generación, mostrando curva de costo y el camino actual. Loggear solo cuando hay mejora.
 * **Devolver resultado final**: el mejor recorrido encontrado ($\textbf{best}$) y su distancia total $D$, incluyendo regreso al origen.
 
-## 6. Ingeniería que escala (52 → \~500 nodos)
+## 6. Ingeniería que escala (52 -> \~500 nodos)
 
 * Implementar **evaluación incremental del costo** recalculando solo aristas afectadas por swap/insert/2-opt.
 * Almacenar la **matriz $D$ simétrica** como triángulo comprimido y usar *lookups* $d_{ij}=d_{ji}$.

@@ -208,7 +208,7 @@ def mutateSwap(t: list[int]) -> None:
     t[i], t[j] = t[j], t[i]
 
 def apply2optOnce(t, n, vec, neighbors=None, first_improve=False, useFlocking=True):
-    """Un paso 2-opt. Con KNN opcional. Empates rotos por índice/“flocking” para estabilidad/calidad."""
+    """Un paso 2-opt. Con KNN opcional. Empates rotos por índice/"flocking" para estabilidad/calidad."""
     best_delta = 0
     best_move = None  # (i1, j, tieScore)
     L = len(t)
@@ -219,7 +219,7 @@ def apply2optOnce(t, n, vec, neighbors=None, first_improve=False, useFlocking=Tr
             if neighbors is not None:
                 if not ((c in neighbors[a]) or (d in neighbors[a]) or (c in neighbors[b]) or (d in neighbors[b])):
                     continue
-            # delta y tie-break “flocking” (preferir menor arista añadida)
+            # delta y tie-break "flocking" (preferir menor arista añadida)
             new1 = getDistance(a, c, n, vec)
             new2 = getDistance(b, d, n, vec)
             old1 = getDistance(a, b, n, vec)

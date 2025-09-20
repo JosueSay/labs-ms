@@ -125,7 +125,7 @@ $$
 
 Pregunta:
 
-* ¿Qué pasa si en vez de binaria permitimos llevar fracciones del objeto? (→ Knapsack fraccionario → problema continuo).
+* ¿Qué pasa si en vez de binaria permitimos llevar fracciones del objeto? (-> Knapsack fraccionario -> problema continuo).
 
 ### 2. Representación Entera
 
@@ -158,7 +158,7 @@ $$
 En este caso, el espacio ya no es finito. Para discretizar:
 
 * Se crea un **grid** (rejilla).
-* Ejemplo: dividir \[0,1] en 100 valores → el problema se vuelve finito.
+* Ejemplo: dividir \[0,1] en 100 valores -> el problema se vuelve finito.
 
 ### 4. Representación por Permutaciones
 
@@ -235,7 +235,7 @@ Ejemplo:
 * Algoritmo hace 1 millón de iteraciones.
 * Explora aleatoriamente el espacio.
 * Se guarda el **mejor resultado encontrado (best-so-far)**.
-* Ese “best” no es necesariamente la óptima global, pero es una buena solución en tiempo razonable.
+* Ese "best" no es necesariamente la óptima global, pero es una buena solución en tiempo razonable.
 
 ## Conclusiones
 
@@ -266,7 +266,7 @@ La idea central:
 * **Gen**: cada posición del cromosoma.
 * **Alelo**: el valor particular de un gen.
 * **Función objetivo (fitness function)**: mide la calidad de un individuo (qué tan bueno es).
-* **Fitness**: valor de aptitud que determina qué tan “fuerte” es un individuo para sobrevivir y reproducirse.
+* **Fitness**: valor de aptitud que determina qué tan "fuerte" es un individuo para sobrevivir y reproducirse.
 
 ### Funcionamiento General
 
@@ -284,7 +284,7 @@ En cada generación:
 4. Se generan nuevos individuos mediante **cruce y mutación**.
 5. La población se actualiza manteniendo el tamaño constante.
 
-Los GA garantizan que siempre aparece un nuevo “mejor candidato” (best-so-far) y se guarda. Este **mejor individuo encontrado** se devuelve al final como la solución subóptima.
+Los GA garantizan que siempre aparece un nuevo "mejor candidato" (best-so-far) y se guarda. Este **mejor individuo encontrado** se devuelve al final como la solución subóptima.
 
 ### Proceso en Detalle
 
@@ -313,7 +313,7 @@ Objetivo: dar más oportunidades a los aptos, pero sin eliminar del todo la dive
 
 #### 3. Cruce (Crossover)
 
-Dos individuos “padres” combinan partes de sus cromosomas para producir descendencia:
+Dos individuos "padres" combinan partes de sus cromosomas para producir descendencia:
 
 * **Single-point crossover:** se corta en un punto aleatorio y se mezclan las mitades.
 * **Two-point crossover:** se hacen dos cortes, generando tres bloques y recombinándolos.
@@ -375,7 +375,7 @@ Condiciones de parada comunes:
 
 * Si solo se explota una región del espacio, el algoritmo se **estanca**.
 * La **mutación** mantiene diversidad genética.
-* En un gráfico de evolución del fitness, el “best” debe seguir mejorando, no quedarse constante demasiado pronto.
+* En un gráfico de evolución del fitness, el "best" debe seguir mejorando, no quedarse constante demasiado pronto.
 
 ### Salida del Algoritmo
 

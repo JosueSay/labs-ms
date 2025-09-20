@@ -41,7 +41,7 @@ $$
 
 donde $d(x,y)$ es la métrica de distancia utilizada.
 
-En un **grafo**, la vecindad puede definirse como los **nodos alcanzables en ≤ r aristas** desde el nodo actual.
+En un **grafo**, la vecindad puede definirse como los **nodos alcanzables en <= r aristas** desde el nodo actual.
 
 ### 3. Intensificación y Diversificación
 
@@ -64,7 +64,7 @@ En la práctica, un buen algoritmo alterna entre **explotación (intensificació
 
 * En algoritmos genéticos (GA):
   Se puede forzar a que los operadores de cruce y mutación generen individuos **dentro de la vecindad de soluciones previas**.
-  Ejemplo: limitar que los descendientes estén a una distancia ≤ r de sus padres.
+  Ejemplo: limitar que los descendientes estén a una distancia <= r de sus padres.
 
 * En búsqueda continua:
   Si tenemos una función f(x) y caemos en un punto x, podemos definir un **intervalo alrededor de x** en el que restringimos los próximos movimientos.
@@ -178,7 +178,7 @@ def HillClimbing1D(x0, f, df, alpha=0.1, maxI=500, maxSched=50, radius=1, d=2):
 El **enfriamiento simulado** es un algoritmo inspirado en un proceso físico de la metalurgia.
 En la práctica, cuando se calientan aleaciones metálicas a altas temperaturas y luego se enfrían de manera controlada hasta temperaturas muy bajas, los átomos se reacomodan a nivel químico. Este reacomodo genera estructuras más rígidas y resistentes. Dicho proceso se repite varias veces para mejorar la calidad del material.
 
-La idea en optimización es **imitar este proceso de enfriamiento**, lo que da origen al **recocido simulado** (*simulated annealing* en inglés). Aunque su nombre pueda sonar coloquial (como “una olla de frijoles”), en realidad describe un método muy poderoso para encontrar soluciones óptimas en problemas complejos.
+La idea en optimización es **imitar este proceso de enfriamiento**, lo que da origen al **recocido simulado** (*simulated annealing* en inglés). Aunque su nombre pueda sonar coloquial (como "una olla de frijoles"), en realidad describe un método muy poderoso para encontrar soluciones óptimas en problemas complejos.
 
 ### ¿Qué significa enfriar en un problema de optimización?
 
@@ -222,35 +222,35 @@ $$
 
 donde:
 
-* \$\Delta E = f(\text{next}) - f(\text{current})\$ es la diferencia de energía (qué tanto mejora o empeora la nueva solución respecto a la actual).
-* \$t = t(i)\$ es la función de temperatura, que disminuye con las iteraciones (schedule).
-* \$k > 0\$ es la **constante de Boltzmann**.
+* $\Delta E = f(\text{next}) - f(\text{current})$ es la diferencia de energía (qué tanto mejora o empeora la nueva solución respecto a la actual).
+* $t = t(i)$ es la función de temperatura, que disminuye con las iteraciones (schedule).
+* $k > 0$ es la **constante de Boltzmann**.
 
 La expresión (1) corresponde al **criterio de Metropolis**, y su distribución de probabilidad es conocida en física como la **distribución de Boltzmann**.
 
 ### Ejemplo en pseudocódigo
 
 ```python
-if ΔE < 0:  
+if delta_E < 0:  
     # Buen salto: mejora la solución
     current = x_k+1
 else:
     # Mal salto: se acepta con probabilidad P
-    if random() < exp(-ΔE / (k * T_i)):
+    if random() < exp(-delta_E / (k * T_i)):
         current = x_k+1
 ```
 
 En este esquema:
 
 * Si la nueva solución es mejor, siempre se acepta.
-* Si es peor, puede aceptarse con cierta probabilidad que disminuye a medida que baja la temperatura \$T\_i\$.
+* Si es peor, puede aceptarse con cierta probabilidad que disminuye a medida que baja la temperatura $T_i$.
 * Este mecanismo evita quedarse atrapado en mínimos locales demasiado pronto.
 
 Se mantiene además un registro del **mejor valor encontrado (best)** a lo largo de las iteraciones.
 
 ### ¿Cómo disminuye la temperatura?
 
-El algoritmo comienza con una **temperatura inicial \$T\_0\$** y la reduce gradualmente según una regla llamada *schedule* o **itinerario de enfriamiento**.
+El algoritmo comienza con una **temperatura inicial $T_0$** y la reduce gradualmente según una regla llamada *schedule* o **itinerario de enfriamiento**.
 
 Existen varias estrategias:
 
@@ -268,7 +268,7 @@ Existen varias estrategias:
    t_{i+1} = \alpha \, t_i, \quad 0 < \alpha < 1
    $$
 
-   La temperatura decrece exponencialmente. Se detiene cuando \$t\_i\$ es menor que una tolerancia.
+   La temperatura decrece exponencialmente. Se detiene cuando $t_i$ es menor que una tolerancia.
 
 3. **Slow:**
 
@@ -276,7 +276,7 @@ Existen varias estrategias:
    t_{i+1} = \frac{1}{1+\beta \, t_i}, \quad \beta > 0
    $$
 
-   La disminución es más lenta gracias al parámetro \$\beta\$.
+   La disminución es más lenta gracias al parámetro $\beta$.
 
 4. **Fast:**
 
@@ -295,8 +295,8 @@ $$
 P = e^{-\Delta E / T_i}.
 $$
 
-* Al inicio (\$T\_i\$ grande), la probabilidad es alta → se aceptan muchos saltos malos.
-* Al final (\$T\_i\$ pequeña), la probabilidad es baja → se aceptan muy pocos saltos malos.
+* Al inicio ($T_i$ grande), la probabilidad es alta -> se aceptan muchos saltos malos.
+* Al final ($T_i$ pequeña), la probabilidad es baja -> se aceptan muy pocos saltos malos.
 
 Esto permite primero **explorar** y luego **explotar** intensivamente el espacio de soluciones, logrando un equilibrio entre búsqueda global y refinamiento local.
 

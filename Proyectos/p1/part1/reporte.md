@@ -76,7 +76,7 @@ y la comparación de la grafica encontrada es la siguiente, tomemos en cuenta qu
 
 > Nota: si se desea ver el recorrido hecho por el algoritmo genetico y un detalle mas minucioso de lo que se obtuvo al correr los comandos se pueden visitar las rutas:
 >
-> - Gifs
-> - Resultados (logs + csv)
+> - [Gifs](https://github.com/JosueSay/labs-ms/tree/main/Proyectos/p1/images/gifs)
+> - [Resultados (logs + csv)](https://github.com/JosueSay/labs-ms/tree/main/Proyectos/p1/results/ga)
 
 > Nota para escoger la semilla se recorrio con parametros prometedores diferentes semillas 1-30 para ver cual semilla podia tener un resultado prometedor y escogerla, no se corrio por tanto tiempo este se obtuvo corriendo el comando  para 2 minutos y ver cual consumia menos costo en ese tiempo, resultando como eficiente la semilla 11 y 13 y correr los comandos para los problemas tsp por mas tiempo.

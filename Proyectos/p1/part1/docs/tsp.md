@@ -17,41 +17,41 @@
 
 Son las más básicas, ampliamente usadas y entendidas.
 
-1. **Poda por límites inferiores/superiores** → si una ruta parcial ya supera el mejor costo hallado, se descarta.
-2. **Reducción de simetrías** → evitar explorar rutas equivalentes (ej. rotaciones o recorridos inversos).
-3. **Criterio de cercanía mínima** → siempre priorizar visitar la ciudad más cercana como paso intermedio.
-4. **Evaluación incremental** → recalcular costos sólo de la parte nueva de la ruta, no todo el recorrido.
-5. **Tablas de memoización** → guardar subproblemas ya resueltos para no recomputarlos.
+1. **Poda por límites inferiores/superiores** -> si una ruta parcial ya supera el mejor costo hallado, se descarta.
+2. **Reducción de simetrías** -> evitar explorar rutas equivalentes (ej. rotaciones o recorridos inversos).
+3. **Criterio de cercanía mínima** -> siempre priorizar visitar la ciudad más cercana como paso intermedio.
+4. **Evaluación incremental** -> recalcular costos sólo de la parte nueva de la ruta, no todo el recorrido.
+5. **Tablas de memoización** -> guardar subproblemas ya resueltos para no recomputarlos.
 
 ### Categoría 2: **Técnicas Lógicas**
 
 Usan razonamiento matemático/estructural para reducir la búsqueda.
 
-1. **Relajación del problema** → resolver una versión más simple (ej. Árbol de expansión mínima) y usarla como límite inferior.
-2. **Descomposición del problema** → dividir en subgrupos de nodos y luego unir las soluciones.
-3. **Eliminación de aristas dominadas** → si una arista es siempre peor que otra alternativa, se descarta.
-4. **Criterio de 2-opt/3-opt (mejoras locales)** → evaluar si intercambiar aristas reduce el recorrido.
-5. **Inferencia por desigualdades triangulares** → usar propiedades métricas para descartar rutas imposibles de mejorar.
+1. **Relajación del problema** -> resolver una versión más simple (ej. Árbol de expansión mínima) y usarla como límite inferior.
+2. **Descomposición del problema** -> dividir en subgrupos de nodos y luego unir las soluciones.
+3. **Eliminación de aristas dominadas** -> si una arista es siempre peor que otra alternativa, se descarta.
+4. **Criterio de 2-opt/3-opt (mejoras locales)** -> evaluar si intercambiar aristas reduce el recorrido.
+5. **Inferencia por desigualdades triangulares** -> usar propiedades métricas para descartar rutas imposibles de mejorar.
 
 ### Categoría 3: **Técnicas Inventadas (heurísticas clásicas concretas)**
 
 Diseños humanos que no garantizan optimalidad pero guían mejor la búsqueda.
 
-1. **Heurística de vecino más cercano** → siempre ir al nodo más próximo aún no visitado.
-2. **Heurística del inserto más barato** → agregar un nuevo nodo al recorrido en la posición que incremente menos el costo.
-3. **Heurística del inserto más lejano** → priorizar incluir los nodos más alejados primero, para reducir huecos grandes al final.
-4. **Criterio de ahorro de Clarke-Wright** → unir rutas parciales si la combinación ahorra distancia.
-5. **Heurística de centros múltiples** → elegir varios nodos “pivote” y organizar el recorrido en torno a ellos.
+1. **Heurística de vecino más cercano** -> siempre ir al nodo más próximo aún no visitado.
+2. **Heurística del inserto más barato** -> agregar un nuevo nodo al recorrido en la posición que incremente menos el costo.
+3. **Heurística del inserto más lejano** -> priorizar incluir los nodos más alejados primero, para reducir huecos grandes al final.
+4. **Criterio de ahorro de Clarke-Wright** -> unir rutas parciales si la combinación ahorra distancia.
+5. **Heurística de centros múltiples** -> elegir varios nodos "pivote" y organizar el recorrido en torno a ellos.
 
 ### Categoría 4: **Técnicas Creativas (exploración avanzada/auxiliar)**
 
 Más flexibles, a veces inspiradas en metáforas o en búsqueda no convencional.
 
-1. **Diversificación controlada** → forzar al algoritmo a explorar rutas muy diferentes de las ya probadas.
-2. **Intensificación selectiva** → concentrar la búsqueda en una región prometedora, repitiendo mejoras locales.
-3. **Reinicio aleatorio inteligente** → reempezar la búsqueda desde un punto distinto, pero usando información acumulada.
-4. **Criterio multiobjetivo auxiliar** → además de distancia, usar métricas extra (ej. equilibrio en las longitudes de subrutas).
-5. **Perturbaciones guiadas (“shaking”)** → modificar deliberadamente una buena solución para escapar de óptimos locales.
+1. **Diversificación controlada** -> forzar al algoritmo a explorar rutas muy diferentes de las ya probadas.
+2. **Intensificación selectiva** -> concentrar la búsqueda en una región prometedora, repitiendo mejoras locales.
+3. **Reinicio aleatorio inteligente** -> reempezar la búsqueda desde un punto distinto, pero usando información acumulada.
+4. **Criterio multiobjetivo auxiliar** -> además de distancia, usar métricas extra (ej. equilibrio en las longitudes de subrutas).
+5. **Perturbaciones guiadas ("shaking")** -> modificar deliberadamente una buena solución para escapar de óptimos locales.
 
 ### Ranking Global de Efectividad
 
@@ -146,7 +146,7 @@ Más flexibles, a veces inspiradas en metáforas o en búsqueda no convencional.
 * **Qué es:** introducir saltos aleatorios o individuos lejanos a los actuales.
 * **Para qué se usa:** explorar nuevas regiones y evitar mínimos locales.
 
-13. **Registro del “best-so-far”**
+13. **Registro del "best-so-far"**
 
 * **Qué es:** mantener siempre guardado el mejor individuo encontrado.
 * **Para qué se usa:** asegurar que el algoritmo no pierda la mejor solución hallada hasta el momento.
@@ -158,5 +158,5 @@ Más flexibles, a veces inspiradas en metáforas o en búsqueda no convencional.
 
 15. **Logging selectivo / visualización**
 
-* **Qué es:** registrar o graficar solo cuando el “best” mejora.
+* **Qué es:** registrar o graficar solo cuando el "best" mejora.
 * **Para qué se usa:** analizar convergencia sin ruido excesivo.
