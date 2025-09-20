@@ -1,0 +1,418 @@
+=== RUN GA =================================================
+        Instancia:      gr229
+        N:              700
+        maxIter:        999999
+        S/C/M:          0.15 / 0.55 / 0.30
+        pc / pm:        0.95 / 0.0044
+        elitismo:       0.02
+        selección:      torneo k=3
+        cruce:          SCX
+        2-optProb:      0.15
+        eaxFrac:        0.20
+        edgeLambda:     0.10
+        edgeTopFrac:    0.25
+        edgeFreqPeriod: 250
+        assortative:    True
+        mem3OptSteps:   4
+        speciesPeriod:  700
+        speciesThresh:  0.38
+        speciesCullFrac:        0.25
+        catastropheFrac:        0.25
+        useFlocking:    True
+-----------------------------------------------------------
+
+[gen 0]
+        best:           156244
+        ciudades:       229
+-----------------------------------------------------------
+
+[gen 1] NUEVO BEST
+        costo:          153975
+        mejora delta:   2269
+        noImprove:      0
+        tiempo:         8.07s (~0.13 min)
+-----------------------------------------------------------
+
+[gen 2] NUEVO BEST
+        costo:          151183
+        mejora delta:   2792
+        noImprove:      0
+        tiempo:         12.34s (~0.21 min)
+-----------------------------------------------------------
+
+[gen 4] NUEVO BEST
+        costo:          150579
+        mejora delta:   604
+        noImprove:      0
+        tiempo:         19.47s (~0.32 min)
+-----------------------------------------------------------
+
+[gen 6] NUEVO BEST
+        costo:          150285
+        mejora delta:   294
+        noImprove:      0
+        tiempo:         25.69s (~0.43 min)
+-----------------------------------------------------------
+
+[gen 7] NUEVO BEST
+        costo:          147811
+        mejora delta:   2474
+        noImprove:      0
+        tiempo:         28.58s (~0.48 min)
+-----------------------------------------------------------
+
+[gen 9] NUEVO BEST
+        costo:          146434
+        mejora delta:   1377
+        noImprove:      0
+        tiempo:         34.22s (~0.57 min)
+-----------------------------------------------------------
+
+[gen 11] NUEVO BEST
+        costo:          144740
+        mejora delta:   1694
+        noImprove:      0
+        tiempo:         39.78s (~0.66 min)
+-----------------------------------------------------------
+
+[gen 14] NUEVO BEST
+        costo:          144313
+        mejora delta:   427
+        noImprove:      0
+        tiempo:         48.25s (~0.80 min)
+-----------------------------------------------------------
+
+[gen 16] NUEVO BEST
+        costo:          144264
+        mejora delta:   49
+        noImprove:      0
+        tiempo:         54.11s (~0.90 min)
+-----------------------------------------------------------
+
+[gen 19] NUEVO BEST
+        costo:          143646
+        mejora delta:   618
+        noImprove:      0
+        tiempo:         62.74s (~1.05 min)
+-----------------------------------------------------------
+
+[gen 21] NUEVO BEST
+        costo:          142570
+        mejora delta:   1076
+        noImprove:      0
+        tiempo:         68.52s (~1.14 min)
+-----------------------------------------------------------
+
+[gen 25] NUEVO BEST
+        costo:          142266
+        mejora delta:   304
+        noImprove:      0
+        tiempo:         80.02s (~1.33 min)
+-----------------------------------------------------------
+
+[gen 28] NUEVO BEST
+        costo:          141152
+        mejora delta:   1114
+        noImprove:      0
+        tiempo:         88.89s (~1.48 min)
+-----------------------------------------------------------
+
+[gen 32] NUEVO BEST
+        costo:          141026
+        mejora delta:   126
+        noImprove:      0
+        tiempo:         100.56s (~1.68 min)
+-----------------------------------------------------------
+
+[gen 37] NUEVO BEST
+        costo:          140092
+        mejora delta:   934
+        noImprove:      0
+        tiempo:         114.90s (~1.91 min)
+-----------------------------------------------------------
+
+[gen 40] NUEVO BEST
+        costo:          139910
+        mejora delta:   182
+        noImprove:      0
+        tiempo:         123.83s (~2.06 min)
+-----------------------------------------------------------
+
+[gen 42] NUEVO BEST
+        costo:          139487
+        mejora delta:   423
+        noImprove:      0
+        tiempo:         129.69s (~2.16 min)
+-----------------------------------------------------------
+
+[gen 47] NUEVO BEST
+        costo:          139414
+        mejora delta:   73
+        noImprove:      0
+        tiempo:         144.68s (~2.41 min)
+-----------------------------------------------------------
+
+[gen 51] NUEVO BEST
+        costo:          139183
+        mejora delta:   231
+        noImprove:      0
+        tiempo:         156.73s (~2.61 min)
+-----------------------------------------------------------
+
+[gen 54] NUEVO BEST
+        costo:          139119
+        mejora delta:   64
+        noImprove:      0
+        tiempo:         165.86s (~2.76 min)
+-----------------------------------------------------------
+
+[gen 59] NUEVO BEST
+        costo:          139073
+        mejora delta:   46
+        noImprove:      0
+        tiempo:         180.66s (~3.01 min)
+-----------------------------------------------------------
+
+[gen 60] NUEVO BEST
+        costo:          138976
+        mejora delta:   97
+        noImprove:      0
+        tiempo:         183.92s (~3.07 min)
+-----------------------------------------------------------
+
+[gen 62] NUEVO BEST
+        costo:          138957
+        mejora delta:   19
+        noImprove:      0
+        tiempo:         189.89s (~3.16 min)
+-----------------------------------------------------------
+
+[gen 67] NUEVO BEST
+        costo:          138950
+        mejora delta:   7
+        noImprove:      0
+        tiempo:         204.22s (~3.40 min)
+-----------------------------------------------------------
+
+[gen 69] NUEVO BEST
+        costo:          138833
+        mejora delta:   117
+        noImprove:      0
+        tiempo:         210.27s (~3.50 min)
+-----------------------------------------------------------
+
+[gen 72] NUEVO BEST
+        costo:          138724
+        mejora delta:   109
+        noImprove:      0
+        tiempo:         219.03s (~3.65 min)
+-----------------------------------------------------------
+
+[gen 74] NUEVO BEST
+        costo:          137791
+        mejora delta:   933
+        noImprove:      0
+        tiempo:         224.89s (~3.75 min)
+-----------------------------------------------------------
+
+[gen 113] NUEVO BEST
+        costo:          137687
+        mejora delta:   104
+        noImprove:      0
+        tiempo:         330.85s (~5.51 min)
+-----------------------------------------------------------
+
+[gen 119] NUEVO BEST
+        costo:          137661
+        mejora delta:   26
+        noImprove:      0
+        tiempo:         346.38s (~5.77 min)
+-----------------------------------------------------------
+
+[gen 123] NUEVO BEST
+        costo:          137578
+        mejora delta:   83
+        noImprove:      0
+        tiempo:         356.61s (~5.94 min)
+-----------------------------------------------------------
+
+[gen 136] NUEVO BEST
+        costo:          137555
+        mejora delta:   23
+        noImprove:      0
+        tiempo:         387.74s (~6.46 min)
+-----------------------------------------------------------
+
+[gen 140] NUEVO BEST
+        costo:          137540
+        mejora delta:   15
+        noImprove:      0
+        tiempo:         397.19s (~6.62 min)
+-----------------------------------------------------------
+
+[gen 147] NUEVO BEST
+        costo:          137522
+        mejora delta:   18
+        noImprove:      0
+        tiempo:         413.24s (~6.89 min)
+-----------------------------------------------------------
+
+[gen 150] NUEVO BEST
+        costo:          137511
+        mejora delta:   11
+        noImprove:      0
+        tiempo:         420.17s (~7.00 min)
+-----------------------------------------------------------
+
+[gen 159] NUEVO BEST
+        costo:          137483
+        mejora delta:   28
+        noImprove:      0
+        tiempo:         440.08s (~7.33 min)
+-----------------------------------------------------------
+
+[gen 162] NUEVO BEST
+        costo:          137468
+        mejora delta:   15
+        noImprove:      0
+        tiempo:         446.96s (~7.45 min)
+-----------------------------------------------------------
+
+[gen 168] NUEVO BEST
+        costo:          137456
+        mejora delta:   12
+        noImprove:      0
+        tiempo:         460.36s (~7.67 min)
+-----------------------------------------------------------
+
+[gen 182] NUEVO BEST
+        costo:          137426
+        mejora delta:   30
+        noImprove:      0
+        tiempo:         504.45s (~8.41 min)
+-----------------------------------------------------------
+
+[gen 203] NUEVO BEST
+        costo:          137416
+        mejora delta:   10
+        noImprove:      0
+        tiempo:         553.56s (~9.23 min)
+-----------------------------------------------------------
+
+[gen 297] NUEVO BEST
+        costo:          137398
+        mejora delta:   18
+        noImprove:      0
+        tiempo:         759.71s (~12.66 min)
+-----------------------------------------------------------
+
+[gen 307] NUEVO BEST
+        costo:          137368
+        mejora delta:   30
+        noImprove:      0
+        tiempo:         784.42s (~13.07 min)
+-----------------------------------------------------------
+
+[gen 438] NUEVO BEST
+        costo:          137153
+        mejora delta:   215
+        noImprove:      0
+        tiempo:         1077.18s (~17.95 min)
+-----------------------------------------------------------
+
+[gen 443] NUEVO BEST
+        costo:          135941
+        mejora delta:   1212
+        noImprove:      0
+        tiempo:         1088.28s (~18.14 min)
+-----------------------------------------------------------
+
+[gen 483] NUEVO BEST
+        costo:          135651
+        mejora delta:   290
+        noImprove:      0
+        tiempo:         1177.20s (~19.62 min)
+-----------------------------------------------------------
+
+[gen 485] NUEVO BEST
+        costo:          135090
+        mejora delta:   561
+        noImprove:      0
+        tiempo:         1183.10s (~19.72 min)
+-----------------------------------------------------------
+
+[gen 486] NUEVO BEST
+        costo:          134775
+        mejora delta:   315
+        noImprove:      0
+        tiempo:         1185.87s (~19.76 min)
+-----------------------------------------------------------
+
+[gen 487] NUEVO BEST
+        costo:          134765
+        mejora delta:   10
+        noImprove:      0
+        tiempo:         1188.55s (~19.81 min)
+-----------------------------------------------------------
+
+[gen 489] NUEVO BEST
+        costo:          134692
+        mejora delta:   73
+        noImprove:      0
+        tiempo:         1193.94s (~19.90 min)
+-----------------------------------------------------------
+
+[gen 504] NUEVO BEST
+        costo:          134662
+        mejora delta:   30
+        noImprove:      0
+        tiempo:         1226.39s (~20.44 min)
+-----------------------------------------------------------
+
+[gen 533] NUEVO BEST
+        costo:          134644
+        mejora delta:   18
+        noImprove:      0
+        tiempo:         1287.29s (~21.45 min)
+-----------------------------------------------------------
+
+=== PERFIL DE TIEMPO ===============================
+        Parse+matriz:   0.02 s
+        Vecinos (k-NN): 0.01 s
+        Init+primer sort:       0.99 s
+        Bucle (acumulado):      28913.55 s
+        Otros:                  0.00 s
+        - assortative     : 25866.99 s  (89.8%)
+        - twoopt_pool     :  1870.39 s  ( 6.5%)
+        - crossover       :   838.47 s  ( 2.9%)
+        - crossover_eax   :   130.19 s  ( 0.5%)
+        - sort            :    73.98 s  ( 0.3%)
+        - memetic_3opt    :    53.71 s  ( 0.2%)
+        - selection       :    48.60 s  ( 0.2%)
+        - anticlones      :    15.97 s  ( 0.1%)
+        - speciation      :     7.36 s  ( 0.0%)
+        - mutation_pure   :     5.15 s  ( 0.0%)
+        - elitist_memetic :     1.21 s  ( 0.0%)
+        - mutation_light  :     0.28 s  ( 0.0%)
+        - edge_hist       :     0.27 s  ( 0.0%)
+        - catastrophe     :     0.00 s  ( 0.0%)
+===================================================
+
+=== RESUMEN ================================================
+        Instancia:              gr229
+        Mejor distancia:        134644
+        Eventos (mejoras):      51
+        Motivo de parada:       time
+-----------------------------------------------------------
+        Tiempo:                 28802.27 s (~480.04 min)
+        Generaciones:           10996
+        Velocidad:              0.38 gen/s      (2.6193 s/gen)
+-----------------------------------------------------------
+        Mejor tour (0-index):
+        - [177, 175, 174, 173, 171, 162, 172, 164, 163, 161, 160, 159, 158, 155, 156, 157, 203, 149, 154, 150, 153, 152, 151, 140, 139, 138, 141, 142, 143, 144, 145, 146, 147, 148, 204, 211, 210, 209, 208, 205, 206, 207, 212, 213, 214, 215, 219, 218, 216, 217, 226, 227, 228, 225, 224, 223, 222, 221, 220, 201, 202, 200, 199, 198, 197, 196, 186, 195, 194, 193, 191, 192, 190, 189, 188, 187, 49, 183, 45, 47, 46, 48, 43, 42, 44, 41, 40, 39, 38, 31, 30, 28, 27, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 18, 50, 51, 52, 54, 53, 57, 58, 59, 60, 61, 63, 64, 65, 62, 66, 67, 68, 70, 69, 71, 72, 77, 76, 75, 74, 73, 90, 89, 78, 79, 87, 88, 85, 84, 24, 83, 86, 80, 81, 82, 56, 55, 23, 22, 21, 20, 19, 17, 16, 15, 11, 12, 13, 14, 25, 26, 29, 32, 33, 37, 165, 124, 123, 109, 108, 107, 103, 104, 106, 105, 98, 97, 96, 95, 94, 36, 34, 35, 91, 92, 93, 99, 100, 101, 102, 111, 114, 117, 118, 120, 121, 122, 119, 115, 112, 116, 113, 110, 125, 126, 127, 128, 129, 130, 131, 137, 136, 135, 134, 133, 132, 170, 169, 168, 166, 167, 176, 178, 180, 179, 181, 182, 184, 185]
+===========================================================
+
+
+[OK]
+        GIF guardado en:        gr229_tsp_optimal.gif
+-----------------------------------------------------------

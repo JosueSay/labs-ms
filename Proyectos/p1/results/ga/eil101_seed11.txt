@@ -1,0 +1,159 @@
+=== RUN GA =================================================
+        Instancia:      eil101
+        N:              600
+        maxIter:        200000
+        S/C/M:          0.15 / 0.65 / 0.20
+        pc / pm:        1.00 / 0.0099
+        elitismo:       0.02
+        selección:      torneo k=3
+        cruce:          SCX
+        2-optProb:      0.25
+        eaxFrac:        0.15
+        edgeLambda:     0.15
+        edgeTopFrac:    0.30
+        edgeFreqPeriod: 200
+        assortative:    True
+        mem3OptSteps:   4
+        speciesPeriod:  800
+        speciesThresh:  0.35
+        speciesCullFrac:        0.20
+        catastropheFrac:        0.20
+        useFlocking:    True
+-----------------------------------------------------------
+
+[gen 0]
+        best:           701
+        ciudades:       101
+-----------------------------------------------------------
+
+[gen 1] NUEVO BEST
+        costo:          678
+        mejora delta:   23
+        noImprove:      0
+        tiempo:         4.80s (~0.08 min)
+-----------------------------------------------------------
+
+[gen 2] NUEVO BEST
+        costo:          675
+        mejora delta:   3
+        noImprove:      0
+        tiempo:         7.37s (~0.12 min)
+-----------------------------------------------------------
+
+[gen 4] NUEVO BEST
+        costo:          659
+        mejora delta:   16
+        noImprove:      0
+        tiempo:         11.58s (~0.19 min)
+-----------------------------------------------------------
+
+[gen 5] NUEVO BEST
+        costo:          658
+        mejora delta:   1
+        noImprove:      0
+        tiempo:         13.53s (~0.23 min)
+-----------------------------------------------------------
+
+[gen 6] NUEVO BEST
+        costo:          656
+        mejora delta:   2
+        noImprove:      0
+        tiempo:         15.48s (~0.26 min)
+-----------------------------------------------------------
+
+[gen 7] NUEVO BEST
+        costo:          645
+        mejora delta:   11
+        noImprove:      0
+        tiempo:         17.39s (~0.29 min)
+-----------------------------------------------------------
+
+[gen 10] NUEVO BEST
+        costo:          643
+        mejora delta:   2
+        noImprove:      0
+        tiempo:         21.34s (~0.36 min)
+-----------------------------------------------------------
+
+[gen 12] NUEVO BEST
+        costo:          638
+        mejora delta:   5
+        noImprove:      0
+        tiempo:         23.83s (~0.40 min)
+-----------------------------------------------------------
+
+[gen 14] NUEVO BEST
+        costo:          635
+        mejora delta:   3
+        noImprove:      0
+        tiempo:         26.28s (~0.44 min)
+-----------------------------------------------------------
+
+[gen 15] NUEVO BEST
+        costo:          632
+        mejora delta:   3
+        noImprove:      0
+        tiempo:         27.58s (~0.46 min)
+-----------------------------------------------------------
+
+[gen 19] NUEVO BEST
+        costo:          631
+        mejora delta:   1
+        noImprove:      0
+        tiempo:         32.26s (~0.54 min)
+-----------------------------------------------------------
+
+[gen 28] NUEVO BEST
+        costo:          630
+        mejora delta:   1
+        noImprove:      0
+        tiempo:         42.44s (~0.71 min)
+-----------------------------------------------------------
+
+[gen 60] NUEVO BEST
+        costo:          629
+        mejora delta:   1
+        noImprove:      0
+        tiempo:         72.43s (~1.21 min)
+-----------------------------------------------------------
+
+=== PERFIL DE TIEMPO ===============================
+        Parse+matriz:   0.00 s
+        Vecinos (k-NN): 0.00 s
+        Init+primer sort:       0.41 s
+        Bucle (acumulado):      1202.61 s
+        Otros:                  0.00 s
+        - assortative     :  1034.16 s  (86.1%)
+        - twoopt_pool     :   110.01 s  ( 9.2%)
+        - crossover       :    44.77 s  ( 3.7%)
+        - crossover_eax   :     5.34 s  ( 0.4%)
+        - selection       :     3.22 s  ( 0.3%)
+        - sort            :     2.97 s  ( 0.2%)
+        - anticlones      :     0.77 s  ( 0.1%)
+        - memetic_3opt    :     0.58 s  ( 0.0%)
+        - mutation_pure   :     0.29 s  ( 0.0%)
+        - mutation_light  :     0.02 s  ( 0.0%)
+        - edge_hist       :     0.02 s  ( 0.0%)
+        - elitist_memetic :     0.02 s  ( 0.0%)
+        - speciation      :     0.01 s  ( 0.0%)
+        - catastrophe     :     0.00 s  ( 0.0%)
+===================================================
+
+=== RESUMEN ================================================
+        Instancia:              eil101
+        Mejor distancia:        629
+        Eventos (mejoras):      14
+        Motivo de parada:       time
+-----------------------------------------------------------
+        Tiempo:                 1200.44 s (~20.01 min)
+        Generaciones:           1283
+        Velocidad:              1.07 gen/s      (0.9357 s/gen)
+-----------------------------------------------------------
+        Mejor tour (0-index):
+        - [27, 25, 11, 79, 67, 28, 23, 53, 3, 54, 24, 38, 66, 22, 55, 74, 40, 21, 73, 71, 72, 20, 39, 57, 12, 93, 94, 96, 86, 1, 56, 14, 42, 41, 13, 43, 37, 85, 15, 60, 84, 90, 99, 36, 97, 92, 91, 58, 98, 95, 5, 88, 51, 17, 82, 59, 4, 83, 16, 44, 7, 45, 46, 35, 48, 63, 62, 89, 31, 9, 61, 10, 18, 47, 81, 6, 87, 30, 69, 29, 19, 65, 64, 70, 34, 8, 50, 32, 80, 33, 77, 78, 2, 76, 75, 49, 0, 68, 26, 100, 52]
+===========================================================
+
+
+[OK]
+        GIF guardado en:        eil101_tsp_optimal.gif
+-----------------------------------------------------------
