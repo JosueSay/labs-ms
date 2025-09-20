@@ -48,7 +48,7 @@ Construye la población inicial mezclando **k semillas** (*Nearest Insertion*) y
 - `n`: número de ciudades.
 - `vec`: vector comprimido de distancias.
 - `N`: tamaño de población (**>0**).
-- `seedFrac`: fracción inicial de semillas (se **recorta** a `[0,1]` y además a `≤0.25` si `n<200`, o `≤0.10` si `n≥200`).
+- `seedFrac`: fracción inicial de semillas (se **recorta** a `[0,1]` y además a `<=0.25` si `n<200`, o `<=0.10` si `n≥200`).
   **Retorna:** lista de `N` tours únicos (listas de enteros).
   **Flujo:**
 
