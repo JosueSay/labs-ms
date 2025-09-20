@@ -1,16 +1,40 @@
-# TSP-GA (berlin52)
+# TSP-GA
 
-## Estructura del proyecto
+<!-- ## Estructura del proyecto
 
 ```bash
 .
-├─ ga.py          # Núcleo del GA: operadores + bucle runGa()
-├─ io_tsp.py      # I/O TSPLIB + distancias (matriz simétrica comprimida)
-├─ poblation.py   # Generación de población y semillas (random + nearest-insertion)
-├─ viz.py         # Visualización: frames PNG, GIF y plot final
-├─ main.py        # CLI/orquestación (args, llamada a runGa, plots, GIF)
-├─ optimal.py     # Visualiza la ruta óptima provista por el problema
-└─ requirements.txt
+❯_: estructura
+.
+├── README.md
+├── docs
+│   └── code # documentación de código
+├── images
+│   ├── gifs # gifs 
+│   ├── optimo_ga # resultados optimos usando ga
+│   └── optimo_ref # resultado tsp teoricos / referenciados
+├── part1
+│   ├── README.md # Este archivo
+│   ├── data # archivos tsp  y opt.tour
+│   ├── docs
+│   │   ├── estructura.md # documentación sobre tipo de estructura usada
+│   │   ├── ga # documentación realizada para ga
+│   │   ├── ga.md
+│   │   ├── notes # notas de clase para este tema
+│   │   ├── parametros.md # explicación a detalle parametros
+│   │   ├── reporte.md # reporte para la primera parte del proyecto
+│   │   └── tsp.md # explicacióno problema tsp
+│   ├── ga.py
+│   ├── io_tsp.py
+│   ├── main.py
+│   ├── optimal.py
+│   ├── poblation.py
+│   └── viz.py
+├── part2 # parte 2 del proyecto
+├── part3 # parte 3 del proyecto
+├── requirements.txt # dependencias
+└── results 
+    └── ga # resultados logs + csv obtenido por el algoritmo genetico
 ```
 
 ### Contenido por archivo
@@ -77,24 +101,65 @@ pip install -r requirements.txt
 
 * **Matriz simétrica**: no se recorre la matriz completa; se usa triángulo superior comprimido y *lookups* `getDistance(i,j)`.
 * **SCX vs OX**: SCX = cruce sesgado por distancias (suele escalar mejor); OX = clásico de orden.
-* **2-opt**: intensificación local barata, aplicada en una pasada sobre una fracción de hijos.
+* **2-opt**: intensificación local barata, aplicada en una pasada sobre una fracción de hijos. -->
 
-## Comando "óptimo"
+## Ejecuciones
+
+### Caso **eil101**
+
+Comando ejecutado:
 
 ```bash
-python main.py --N 600 --maxIter 200000 --survivors 0.10 --crossover 0.80 --mutation 0.10 --pc 0.98 --pm -1 --elitism 0.03 --k 3 --scx --twoOptProb 0.30 --stall 4000 --timeLimit 0 --seed 42 --estimate 300 --noPlot
+python main.py --file data/eil101.tsp --N 600 --maxIter 200000 --survivors 0.15 --crossover 0.65 --mutation 0.20 --pc 1.0 --pm -1 --elitism 0.02 --k 3 --scx --twoOptProb 0.25 --stall 3000 --timeLimit 1200 --seed 11 --record --framesDir logs/eil101/frames --gifOut logs/eil101/eil101_tsp_optimal.gif --csv logs/eil101/eil101_seed11.csv --eaxFrac 0.15 --edgeLambda 0.15 --edgeTopFrac 0.30 --edgeFreqPeriod 200 --assortative --mem3OptSteps 4 --speciesPeriod 800 --speciesThresh 0.35 --speciesCullFrac 0.20 --catastropheFrac 0.20
 ```
 
-> **Sugerencia:** si se desea GIF se debe añadir `--record --framesDir frames --gifOut berlin52_tsp_optimal.gif`.
->
-> Este comando hará un estimado del tiempo en correr para correr todas las iteraciones se deben eliminar del comando los parametros `--estimate 300 --noPlot`
+* Se corrió por 20 minutos.
+* El óptimo de 629 se alcanzó al minuto 1.20 y no mejoró, como era esperado, ya que se conocía que ese era el valor óptimo teórico.
+* El criterio de paro fue el límite de tiempo (20 min).
 
-## Resultados
+Ruta óptima:
 
-**Gráfica de costos y solución óptima:**
+```bash
+[27, 25, 11, 79, 67, 28, 23, 53, 3, 54, 24, 38, 66, 22, 55, 74, 40, 21, 73, 71, 72, 20, 39, 57, 12, 93, 94, 96, 86, 1, 56, 14, 42, 41, 13, 43, 37, 85, 15, 60, 84, 90, 99, 36, 97, 92, 91, 58, 98, 95, 5, 88, 51, 17, 82, 59, 4, 83, 16, 44, 7, 45, 46, 35, 48, 63, 62, 89, 31, 9, 61, 10, 18, 47, 81, 6, 87, 30, 69, 29, 19, 65, 64, 70, 34, 8, 50, 32, 80, 33, 77, 78, 2, 76, 75, 49, 0, 68, 26, 100, 52]
+```
 
-![Solución óptima](./images/ga_result.png)
+Comparación gráfica:
 
-**GIF del proceso seguido por el algoritmo genético:**
+![TSP Óptimo Eil101 Teórico](../images/optimo_ref/eil101_optimo_ref.png)
+![TSP Óptimo Eil101 GA](../images/optimo_ga/eil101_seed11_optimo.png)
+![Gif TSP](../images/gifs/eil101_tsp_optimal.gif)
 
-![Solución óptima](./images/berlin52_tsp_optimal.gif)
+### Caso **gr229**
+
+Comando ejecutado:
+
+```bash
+python main.py --file data/gr229.tsp --N 700 --maxIter 999999 --survivors 0.15 --crossover 0.55 --mutation 0.30 --pc 0.95 --pm -1 --elitism 0.02 --k 3 --scx --twoOptProb 0.15 --stall 999999 --timeLimit 28800 --seed 13 --record --framesDir logs/gr229/frames --gifOut logs/gr229/gr229_tsp_optimal.gif --csv logs/gr229/gr229_seed13.csv --eaxFrac 0.20 --edgeLambda 0.10 --edgeTopFrac 0.25 --edgeFreqPeriod 250 --mem3OptSteps 4 --speciesPeriod 700 --speciesThresh 0.38 --speciesCullFrac 0.25 --catastropheFrac 0.25
+```
+
+* Se corrió por 8 horas.
+* Se alcanzó un valor de 134644 al minuto 21.45, sin mejoras posteriores.
+* El criterio de paro fue el límite de tiempo (8 h).
+
+Ruta óptima encontrada (solo costo disponible como referencia):
+
+![TSP Óptimo Gr229 GA](../images/optimo_ga/gr229_seed13_optimo.png)
+![Gif TSP](../images/gifs/gr229_tsp_optimal.gif)
+
+### Caso **cherry189**
+
+Comando ejecutado:
+
+```bash
+python main.py --file data/cherry189.tsp --N 700 --maxIter 999999 --survivors 0.15 --crossover 0.55 --mutation 0.30 --pc 0.95 --pm -1 --elitism 0.02 --k 3 --scx --twoOptProb 0.15 --stall 999999 --timeLimit 28800 --seed 13 --record --framesDir logs/chery189/frames --gifOut logs/chery189/chery189_tsp_optimal.gif --csv logs/chery189/chery189_seed13.csv --eaxFrac 0.20 --edgeLambda 0.10 --edgeTopFrac 0.25 --edgeFreqPeriod 250 --mem3OptSteps 4 --speciesPeriod 700 --speciesThresh 0.38 --speciesCullFrac 0.25 --catastropheFrac 0.25
+```
+
+* Se corrió por 8 horas.
+* Se alcanzó un valor de 3176 al minuto 5.69, sin mejoras posteriores.
+* El criterio de paro fue el límite de tiempo (8 h).
+
+Comparación gráfica:
+
+![TSP Óptimo Cherry189 Teórico](../images/optimo_ref/cherry189_optimo_ref.png)
+![TSP Óptimo Cherry189 GA](../images/optimo_ga/cherry189_seed13_optimo.png)
+![Gif TSP](../images/gifs/chery189_tsp_optimal.gif)
