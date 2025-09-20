@@ -18,3 +18,9 @@ Resolver los problemas de valor inicial siguientes:
 - $y(0) = -3$  
 
 y graficar las soluciones obtenidas asumiendo un término constante $C = 0$ en la expresión de su solución.
+
+## Procedimiento
+
+![](../images/p3_1.png)
+
+![](../images/p3_2.png)
