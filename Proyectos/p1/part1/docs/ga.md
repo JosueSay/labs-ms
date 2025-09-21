@@ -859,7 +859,7 @@ Cada cierto número de generaciones se "ecologiza" la población agrupando tours
 
 2. **Cómo se mide la similitud (Jaccard de aristas)**
 
-   Representa cada tour $t=\[t\_0,\dots,t\_{n-1}]$ por su **conjunto de aristas no dirigidas** del ciclo cerrado:
+   Representa cada tour $t=[t\_0,\dots,t\_{n-1}]$ por su **conjunto de aristas no dirigidas** del ciclo cerrado:
 
    $$
    E(t)=\bigl\{\{\min(t_i,t_{i+1}),\max(t_i,t_{i+1})\}\bigr\}_{i=0}^{n-1}.
@@ -955,8 +955,8 @@ Cuando la población pasa **muchas generaciones** sin batir el **mejor costo** (
 
    El **double-bridge** es un movimiento "de salto largo" que rompe **cuatro** aristas y reconecta en una topología **muy distinta**:
 
-   - Elegir índices $0\<i\<j\<k<\ell\<n$ (cuatro cortes).
-   - Partir el tour $T=\[A|B|C|D]$ en cuatro segmentos contiguos.
+   - Elegir índices $0<i<j<k<\ell<n$ (cuatro cortes).
+   - Partir el tour $T=[A|B|C|D]$ en cuatro segmentos contiguos.
    - Reconectar, p. ej.:
 
      $$
