@@ -1,64 +1,58 @@
 # Algoritmo Genético
 
-Este algoritmo genético (AG) para TSP itera sobre generaciones construyendo una nueva población a partir de: sobrevivientes (S%), hijos por cruce (C%) y mutación pura (M%), con intensificación local (2-opt) y protección del mejor (elitismo). Dispone de **tres criterios de paro** que se evalúan **en cada generación**:
+Este AG para TSP construye cada generación a partir de **sobrevivientes (S%)**, **hijos por cruce (C%)** y **mutación pura (M%)**. La calidad se refuerza con **2-opt paralelo** (pool) y un **bloque memético** (3-opt acotado sobre élites cada cierto número de generaciones). La diversidad se mantiene con **emparejamiento *assortative*** (padres lejanos en aristas), **histograma de aristas** (para sesgar SCX), **especies** (clustering por aristas con culling) y **catástrofes** (reinyección controlada). El **elitismo** protege el mejor conocido.
 
-* `--stall = s`
-  * Si pasan **s** generaciones seguidas sin `best` nuevo -> **STOP** (motivo: `"stall"`).
+**Criterios de paro** (se evalúan **en cada generación**):
 
-* `--timeLimit = T` (segundos)
-  * Si `time.time() - t0 >= T` -> **STOP** (motivo: `"time"`), **independiente** de `stall`.
+- `--timeLimit = T` (segundos): si `t >= T` -> **STOP** (`"time"`).
+- `--stall = s`: si hay **s** generaciones seguidas sin nuevo *best* -> **STOP** (`"stall"`).
+- `--maxIter = G`: si `gen >= G` -> **STOP** (`"maxIter"`).
 
-* `--maxIter = G`
-  * Si se alcanzan **G** generaciones -> **STOP** (motivo: `"maxIter"`).
-
-**Prioridad**: **tiempo excedido -> para**; si no, **stall excedido -> para**; si no, **si gen > maxIter -> para**.
-
-Las técnicas empleadas se resumen en las siguientes fases:
-
-* **Selección por torneo (k)**: controla la **presión selectiva** (k grande -> más explotación; k pequeño -> más diversidad).
-* **Cruces de permutación**:
-  * **OX** (Order Crossover): conserva un segmento del padre 1 y respeta el orden relativo del padre 2 (no mira distancias).
-  * **SCX** (Sequential Constructive): elige el siguiente más cercano entre recomendaciones de ambos padres; aprovecha **distancias** locales.
-* **Mutación**:
-  * **Ligera (pm)** sobre hijos de cruce: *insertion* o *swap* (una operación, con prob. `pm`).
-  * **Pura (M%)**: crea individuos siempre mutados desde tours base (diversidad garantizada).
-* **2-opt** (intensificación): aplica, en sitio, una inversión si mejora el costo; cantidad controlada por `twoOptProb`.
-* **Elitismo**: reinyecta los mejores de la generación previa (`elites`) para no perder soluciones de alta calidad.
-* **Control de tamaños**: S% + C% + M% = 1 -> población exacta de tamaño N en cada generación.
-* **Paro robusto**: combinación de `timeLimit`, `stall` y `maxIter` con la prioridad indicada arriba.
+**Prioridad**: tiempo -> stall -> maxIter.
 
 ```mermaid
 flowchart TD
-  A["Inicio"] --> B["Leer instancia TSP<br/>coords o matriz simétrica"]
-  B --> C["Inicializar población N"]
+  A["Inicio"] --> B["Leer instancia TSP<br/>distancias comprimidas"]
+  B --> C["Población inicial N<br/>(semillas + aleatorios)"]
   C --> D["Ordenar por costo y registrar best0"]
+
+  %% Loop
   D --> E{"timeLimit?"}
-  E -->|Si| ZT["STOP (time)"]
+  E -->|Sí| ZT["STOP (time)"]
   E -->|No| F{"noImprove >= stall?"}
-  F -->|Si| ZS["STOP (stall)"]
-  F -->|No| G{"gen > maxIter?"}
-  G -->|Si| ZI["STOP (maxIter)"]
+  F -->|Sí| ZS["STOP (stall)"]
+  F -->|No| G{"gen >= maxIter?"}
+  G -->|Sí| ZI["STOP (maxIter)"]
   G -->|No| H["Tomar S% sobrevivientes"]
-  H --> I["Seleccionar parentsNeeded = max(C*2,2)<br/>por Torneo k"]
-  I --> J["Formar C hijos:<br/>pc -> OX/SCX; (1-pc) -> copia padre1"]
-  J --> K["Mutación ligera pm<br/>en hijos de cruce (insertion/swap)"]
-  K --> L["Generar M hijos por mutación pura"]
-  L --> M["2-opt a poolSize = max(1, int(twoOptProb*(C+M)))"]
-  M --> N["Unir S + C + M -> newPop"]
-  N --> O["Elitismo: newPop[:elites] = pop[:elites]"]
-  O --> P["Ajustar tamaño -> #124;newPop#124; = N"]
-  P --> Q["Ordenar por costo"]
-  Q --> R["Actualizar best, history, noImprove, gen++;<br/>pop = newPop"]
-  R --> E
+
+  H --> I["Selección por torneo (k)<br/>parentsNeeded = C*2"]
+  I --> J["Emparejamiento<br/>(assortative ON/OFF)"]
+  J --> K["Cruces con prob pc:<br/>EAX-lite (eaxFrac) / SCX (sesgado por histograma) / OX"]
+  K --> L["Mutación ligera pm a hijos de cruce"]
+  L --> M["Mutación pura (M%)"]
+  M --> N["2-opt paralelo a pool twoOptProb<br/>(flocking en desempates)"]
+  N --> O["Memético élites: 2-opt + 3-opt acotado (mem3OptSteps)"]
+  O --> P["Unir S + C + M -> newPop<br/>Elitismo + anticlones + ajustar N"]
+  P --> Q{"¿Toca refrescar histograma?<br/>(edgeFreqPeriod)"}
+  Q -->|Sí| Q1["Recalcular frecuencias en top edgeTopFrac"]
+  Q -->|No| R
+  Q1 --> R{"¿Toca especies?<br/>(speciesPeriod)"}
+  R -->|Sí| R1["Cluster Jaccard <= speciesThresh<br/>Culling speciesCullFrac"]
+  R -->|No| S
+  R1 --> S{"¿Estancamiento largo?"}
+  S -->|Sí| S1["Catástrofe: reemplazar cola<br/>(catastropheFrac) + kicks"]
+  S -->|No| T
+  S1 --> T["Ordenar por costo -> actualizar best/history/noImprove/gen"]
+  T --> E
 ```
 
 ## Configuración
 
-### Ciudades y distancias (simétricas, tipo Manhattan)
+### Ciudades y distancias (simétricas, enteras)
 
 Ciudades: **A, B, C, D, E, F, G, H**
 
-Matriz de distancias $d_{ij}=d_{ji}$ (enteros):
+Matriz de distancias $d_{ij}=d_{ji}$:
 
 |       |  A |  B |  C |  D |  E |  F |  G |  H |
 | ----- | -: | -: | -: | -: | -: | -: | -: | -: |
@@ -71,11 +65,9 @@ Matriz de distancias $d_{ij}=d_{ji}$ (enteros):
 | **G** |  5 |  3 |  5 |  7 |  4 |  2 |  0 |  2 |
 | **H** |  3 |  5 |  7 |  9 |  6 |  4 |  2 |  0 |
 
-> Ejemplo de tour y costo: A->B->C->D->E->F->G->H->A = **2+2+2+3+2+2+2+3 = 18**.
-
 ### Población inicial (N=10)
 
-Tours (permutaciones) y costos ya **precalculados** con la tabla:
+Tours y costos **precalculados**:
 
 | ID     | Cromosoma       |  Costo |
 | ------ | --------------- | -----: |
@@ -90,353 +82,467 @@ Tours (permutaciones) y costos ya **precalculados** con la tabla:
 | P8     | A E F G H D C B |     24 |
 | P9     | A C D E F G H B |     20 |
 
-*(Menor costo = mejor; P0 y P1 son co-mejores.)*
+### Parámetros para el ejemplo (con nuevas opciones)
 
-### Parámetros para el ejemplo
+- **Tamaño y mezcla**
 
-* `N=10`
-* `--survivors=0.20` -> **S = 2**
-* `--crossover=0.60` -> **C = 6**
-* `--mutation=0.20` -> **M = 2**
-* `--pc=0.95` (prob. de cruce por pareja)
-* `--pm=0.30`
-* `--elitism=0.10` -> **élites = 1**
-* `--k=5` (torneo)
-* `--twoOptProb=0.30` -> con 8 hijos nuevos => `poolSize=int(0.3*8)=2`
-* `--stall=400` (paro por 400 gens sin mejorar)
+  - `N=10`
+  - `--survivors=0.20` -> **S=2**
+  - `--crossover=0.60` -> **C=6**
+  - `--mutation=0.20` -> **M=2**
+  - `--elitism=0.10` -> **élites=1**
+  - `--k=5` (torneo)
+  - `--pc=0.95` (probabilidad de cruce por pareja)
+  - `--pm=0.30` (mutación ligera sobre hijos)
+
+- **Operadores de cruce y sesgo por aristas**
+
+  - `--scx` (SCX activo; OX queda como alternativa cuando SCX no se use)
+  - `--eaxFrac=0.33` -> \~**2** de los **6** hijos vía **EAX-lite**; \~**4** vía **SCX/OX**
+  - `--edgeLambda=0.20` (peso del histograma en SCX)
+  - `--edgeTopFrac=0.50` (con **N=10**, histograma sobre el **top-5**)
+  - `--edgeFreqPeriod=2` (se refresca cada **2** generaciones)
+
+- **Diversidad estructural**
+
+  - `--assortative` (ON): parejas **lejanamente** distintas (distancia Jaccard en aristas)
+  - **Especies**:
+
+    - `--speciesPeriod=3` (reconstrucción cada **3** generaciones)
+    - `--speciesThresh=0.40` (umbral de similitud por aristas)
+    - `--speciesCullFrac=0.25` (extinguir **25%** de la peor especie cuando aplica)
+  - **Catástrofes**:
+
+    - `--catastropheFrac=0.25` (reemplazo del **25%** de la población cuando se dispara el evento)
+
+- **Mejoras locales**
+
+  - `--twoOptProb=0.30` -> con **8** hijos nuevos (C+M) => **poolSize=2** para 2-opt paralelo
+  - `--mem3OptSteps=2` (3-opt acotado en el bloque memético sobre élites, cuando toque)
+  - *(Flocking ON por defecto: desempate en 2-opt favoreciendo aristas más cortas).*
+
+- **Paro**
+
+  - `--stall=400`, `--timeLimit` según el escenario, `--maxIter` según el plan
+
+#### Cómputos derivados en esta configuración
+
+- **Sobrevivientes**: 2 (se copian tal cual).
+- **Padres necesarios**: `C*2 = 12` para intentar producir 6 hijos (con `pc=0.95`, casi todos cruzan).
+- **Cruces**: $\approx$**2** por **EAX-lite** (exploración guiada), $\approx$**4** por **SCX** (sesgado por histograma; si no aplica, OX).
+- **Mutación pura**: **2** individuos (garantiza diversidad base).
+- **2-opt pool**: **2** candidatos (first-improve en workers, con *flocking*).
+- **Histograma de aristas**: se recalcula cada **2** generaciones con el **top-5**; su peso en SCX es `edgeLambda=0.20`.
+- **Especies**: cada **3** generaciones; si hay estancamiento local, se **culla 25%** de la peor especie e inyecta nuevos.
+- **Catástrofe**: ante estancamiento prolongado, reemplaza **25%** de la población con *double-bridge + 2-opt* (sacude el óptimo local).
 
 ## Fases
 
+Estas son las fases por las que pasa el algoritmo genético. Para ilustrar, usamos la **configuración** dada (N=10, S=2, etc.) y mostramos **una sola iteración**.
+
 ### Sobrevivir (S%)
 
-1. Cálculo de S
+**Qué es (en el código).**
+Se "rescatan" los **S mejores** tours de la generación actual y se copian **intactos** al inicio de la nueva población. No se cruzan ni mutan en esta fase.
 
-   * Fórmula del código: `S = max(1, int(N * survivors))`.
-   * Con `N=10` y `survivors=0.20` -> `S = max(1, int(10*0.20)) = max(1, 2) = 2`.
+1. **Cálculo de S**
 
-2. Ordenar por costo
+    - Fórmula: `S = max(1, int(N * survivors))`.
+    - Con `N=10` y `survivors=0.20` -> `S = max(1, 2) = 2`.
 
-   * El código ordena la población por `fitness` (menor costo = mejor).
-   * Si hay empates, Python mantiene el orden relativo previo (sort estable). Para este ejemplo tomamos el orden listado.
+      > Nota: en el inicio del run, S/C/M se **renormalizan** para que sumen 1.0; luego se enterizan a tamaños.
 
-3. Selección de los S mejores
+2. **Ordenar por costo (fitness)**
 
-   * Se copian **tal cual** los primeros `S` individuos de la población ordenada a la nueva generación.
-   * No se cruzan, no se mutan en esta fase, no se les aplica 2-opt aquí. Es literalmente un "copiar y pegar" para preservar calidad.
+    - Se ordena la población por **menor distancia** (sort estable para empates).
+    - Con los costos dados: `P0(18), P1(18), P3(19), P6(19), P2(20), P9(20), P4(21), P5(22), P7(23), P8(24)`.
 
-4. Resultado concreto con tu población inicial
+3. **Copiar sobrevivientes**
 
-   * Población ordenada por costo (de menor a mayor):
-     P0 (18), P1 (18), P3 (19), P6 (19), P2 (20), P9 (20), P4 (21), P5 (22), P7 (23), P8 (24).
-   * `S=2` -> sobreviven: **P0** y **P1**.
-   * Se colocan al inicio de la nueva población:
+    - Se copian los **primeros S=2**: **P0** y **P1**.
+    - Nueva población (parcial): `[P0(18), P1(18)]`.
+    - Faltan **8** individuos por completar (se crearán en cruce/mutación).
 
-     ```bash
-     newPop (parcial) = [ P0(18), P1(18) ]
-     tamaño actual = 2
-     faltan = N - S = 10 - 2 = 8
-     ```
+4. **Relación con el resto del ciclo**
 
-   * Estos "faltan" se completarán luego con C hijos por cruce y M hijos por mutación (fases posteriores).
+    - Estos sobrevivientes **sí pueden** participar como **padres** en la selección por torneo.
+    - Más adelante, tras generar hijos y mutaciones, se aplicará **elitismo** (porcentaje independiente) que **reimpone** la cabeza de la generación previa si hiciera falta.
+    - El bloque **memético** (2-opt/3-opt en élites) ocurre **después**, no aquí.
 
-5. Qué significa exactamente "sobrevivir"
+5. **Analogía natural (realidad)**
 
-   * "Sobrevivir" = pasar **intacto** a la siguiente generación.
-   * Ventaja: garantiza estabilidad del mejor desempeño conocido (explotación).
-   * Nota: estos sobrevivientes **sí pueden** ser elegidos más adelante como **padres** en la fase de selección (torneo k), porque la selección de padres muestrea desde **toda** la población de la generación actual.
+    - Representa la **supervivencia de los más aptos**: los individuos con mejor "aptitud" (menor costo) **pasan sus genes sin cambios** a la siguiente generación, preservando rasgos valiosos.
+    - Beneficio: **estabilidad** y **explotación** del conocimiento actual; coste: si S es alto, **reduce diversidad**.
 
-### Seleccionar padres
+### Selección (torneo k): elegir padres hasta cubrir `C*2`
 
-1. ¿Cuántos padres se necesitan?
+Se eligen **padres** mediante **torneos de tamaño `k`**: en cada torneo se muestrean `k` individuos **al azar** de la población **actual** (no del `newPop` parcial), gana el de **menor costo** (empates se resuelven de forma estable). Se repite hasta reunir `parentsNeeded = max(C*2, 2)` ganadores.
 
-   * Objetivo de cruce: `C = 6` hijos por cruce.
-   * Regla del código: `parentsNeeded = max(C*2, 2)` -> `parentsNeeded = 12`.
-   * Motivo: cada hijo se construye a partir de una **pareja** (2 padres). Con `C=6` -> 6 parejas -> 12 padres.
+1. **¿Cuántos padres se necesitan?**
 
-2. ¿De dónde salen los 12 padres?
+    - Objetivo de cruce: `C = 6`.
+    - Regla: `parentsNeeded = max(C*2, 2)` -> `12`.
+    - Razón: cada **hijo** requiere **dos** padres; 6 hijos => 6 parejas => **12** padres.
 
-   * Se hacen **12 torneos independientes** de tamaño `k=5`.
-   * En **cada torneo**: se **muestran 5 individuos al azar** (sin repetir *dentro* del torneo, pero **sí pueden repetirse entre torneos distintos**). Gana el de **menor costo** entre esos 5.
-   * Se repite hasta obtener **12 ganadores**. Estos 12 ganadores pueden contener **repetidos** (por eso un mismo individuo puede participar en varias parejas).
+2. **¿De dónde salen? (cómo funcionan los torneos)**
 
-3. ¿Sobre qué población se hacen los torneos?
+    - Se realizan **12 torneos independientes** de tamaño `k=5`.
+    - En **cada** torneo: se muestran **5** individuos al azar (sin repetir *dentro* del torneo, pero **sí** pueden repetirse **entre** torneos).
+    - Gana el de **menor costo**.
+    - Los 12 ganadores pueden contener **repetidos** (un mismo individuo puede ser padre en varias parejas).
 
-   * Sobre la **población actual ordenada** (P0..P9).
-   * Nota: que P0 y P1 hayan "sobrevivido" en la fase 1 no cambia esta fase; la **selección de padres** siempre muestrea desde **toda** la población actual (no desde `newPop` parcial).
+3. **¿Sobre qué conjunto se compite?**
 
-4. Ejecución concreta (12 torneos k=5)
+    - Sobre la **población actual ordenada** (P0..P9).
+    - Que P0 y P1 hayan "sobrevivido" no cambia nada aquí: la **selección** siempre toma candidatos de **toda** la población vigente.
 
-   * T1: {P1, P4, P7, P9, P2} -> gana **P1 (18)**
-   * T2: {P3, P0, P5, P8, P6} -> gana **P0 (18)**
-   * T3: {P2, P7, P5, P4, P9} -> gana **P2 (20)**
-   * T4: {P0, P1, P2, P3, P4} -> gana **P0 (18)**
-   * T5: {P3, P4, P6, P7, P8} -> gana **P3 (19)**
-   * T6: {P1, P2, P5, P6, P9} -> gana **P1 (18)**
-   * T7: {P0, P2, P3, P5, P7} -> gana **P0 (18)**
-   * T8: {P6, P7, P8, P9, P4} -> gana **P6 (19)**
-   * T9: {P1, P3, P4, P5, P9} -> gana **P1 (18)**
-   * T10: {P0, P8, P2, P4, P7} -> gana **P0 (18)**
-   * T11: {P5, P6, P7, P8, P9} -> gana **P6 (19)**
-   * T12: {P2, P3, P4, P5, P1} -> gana **P1 (18)**
+4. **Ejecución concreta (12 torneos, `k=5`)**
 
-   Lista de 12 padres (en orden):
-   `[P1, P0, P2, P0, P3, P1, P0, P6, P1, P0, P6, P1]`
+    - T1: {P1,P4,P7,P9,P2} -> **P1(18)**
+    - T2: {P3,P0,P5,P8,P6} -> **P0(18)**
+    - T3: {P2,P7,P5,P4,P9} -> **P2(20)**
+    - T4: {P0,P1,P2,P3,P4} -> **P0(18)**
+    - T5: {P3,P4,P6,P7,P8} -> **P3(19)**
+    - T6: {P1,P2,P5,P6,P9} -> **P1(18)**
+    - T7: {P0,P2,P3,P5,P7} -> **P0(18)**
+    - T8: {P6,P7,P8,P9,P4} -> **P6(19)**
+    - T9: {P1,P3,P4,P5,P9} -> **P1(18)**
+    - T10: {P0,P8,P2,P4,P7} -> **P0(18)**
+    - T11: {P5,P6,P7,P8,P9} -> **P6(19)**
+    - T12: {P2,P3,P4,P5,P1} -> **P1(18)**
 
-5. Formar las 6 parejas (en pares consecutivos)
+    **Lista de 12 padres**: `[P1, P0, P2, P0, P3, P1, P0, P6, P1, P0, P6, P1]`.
 
-   * Pareja 1: (P1, P0)
-   * Pareja 2: (P2, P0)
-   * Pareja 3: (P3, P1)
-   * Pareja 4: (P0, P6)
-   * Pareja 5: (P1, P0)
-   * Pareja 6: (P6, P1)
+5. **Formación de parejas (pares consecutivos)**
 
-   Estas **6 parejas** alimentarán la fase de cruce. Ahí entra `pc`:
+    - (P1, P0), (P2, P0), (P3, P1), (P0, P6), (P1, P0), (P6, P1)
+  
+      Estas **6 parejas** pasan a **cruce**: con `pc=0.95` se cruza (EAX-lite/SCX/OX); con `1-pc=0.05` se copia el primer padre.
 
-   * Por cada pareja, con `pc=0.95` -> cruce (OX o SCX).
-   * Con prob. `1 - pc = 0.05` -> "no cruce" y se copia el primer padre (hijo = padre1).
+6. **Analogía natural (realidad)**
 
-### Parejas y cruce (OX o SCX) con `pc`
+    Es **competencia local** por apareamiento: en cada "nicho" de `k` competidores, el individuo **más apto** gana el derecho de reproducirse. Aumentar `k` eleva la **presión selectiva** (más explotación); reducir `k` incrementa **diversidad** (más exploración).
 
-1. Parejas (vienen de la Fase 2, 12 ganadores en orden):
-   `[P1, P0, P2, P0, P3, P1, P0, P6, P1, P0, P6, P1]`
-   Se forman 6 parejas consecutivas:
+### Emparejamiento *assortative* (ON/OFF)
 
-```bash
-#1 (P1, P0)   #2 (P2, P0)   #3 (P3, P1)
-#4 (P0, P6)   #5 (P1, P0)   #6 (P6, P1)
-```
+Dado el multiconjunto de **12 padres** (ver configuración), se forman **6 parejas**. La idea es **emparejar "distintos" con "distintos"** para maximizar la variedad genética antes del cruce.
 
-2. Moneda con `pc=0.95` por pareja
-   Ejemplo de resultado (consistente con pc alto):
+1. **Qué hace cuando está ON**
 
-```bash
-#1 Sí  #2 Sí  #3 Sí  #4 Sí  #5 NO  #6 Sí
-```
+    - **Criterio:** maximiza la **suma de distancias de Jaccard** entre los conjuntos de **aristas** de los tours (aristas no dirigidas del ciclo).
+    - **Efecto:** reduce cruces de tours casi idénticos (p. ej., evita pares con distancia 0 como P0–P1), **aumenta diversidad** en hijos (SCX/EAX-lite aprovechan mejor material diferente) y **retrasa la clonación**.
+    - **Con nuestra lista de 12 padres:** una selección que **maximiza** la distancia total (dado el conteo de P0/P1) es:
 
-Esto da 5 hijos por **cruce** y 1 **copia** (el de la pareja #5).
-En total, tras recorrer las 6 parejas: `childrenC = [c1,c2,c3,c4,copy,c6]`
-Esperado estadístico: `pc*6 = 5.7  ->  $\approx$ 5 ó 6 cruzados`.
+        (P6,P1), (P1,P0), (P0,P6), (P3,P1), (P2,P0), (P1,P0) -> **suma = 1.60**.
 
-> **Pareja #5: (P1, P0)**
-> Moneda falla (5%): **NO cruce** es decir que Hijo = **copia** del primer padre: `copy = P1[:] = [A, H, G, F, E, D, C, B]`
+        *(Por los conteos 4 $\times$ P0 y 4 $\times$ P1, dos pares P1–P0 con distancia 0 son inevitables.)*
 
-#### Ejemplo OX (pareja #1: P1, P0)
+2. **Qué pasa si está OFF**
 
-Padres (de la tabla):
+    - **Criterio:** no se optimiza la lejanía; típicamente se forman **pares consecutivos** en la lista de padres (o al azar).
+    - **Riesgo:** más probabilidad de emparejar tours casi iguales (p. ej., varios P0–P1), **bajando la diversidad** de los hijos y forzando más trabajo a 2-opt/3-opt.
+    - **En este ejemplo concreto:** el emparejamiento secuencial de la lista `[P1,P0,P2,P0,P3,P1,P0,P6,P1,P0,P6,P1]` produce **exactamente**
+      (P1,P0), (P2,P0), (P3,P1), (P0,P6), (P1,P0), (P6,P1),
+      cuya suma de distancias también es **1.60**; es una **coincidencia** favorecida por cómo quedaron intercalados los padres. En general, **OFF** suele dar una suma **menor**.
 
-* P1 = `[A, H, G, F, E, D, C, B]`
-* P0 = `[A, B, C, D, E, F, G, H]`
+3. **Cómo se mide la "lejanía"**
 
-OX hace:
+    Sea cada tour como conjunto de aristas {min(u,v),max(u,v)}.
+    Distancia Jaccard: $1-\frac{|\cap|}{|\cup|}$. Con nuestra población:
 
-1. Elegir segmento de **P1**. `a=2, b=5` -> segmento `[G, F, E, D]`.
-2. Hijo con huecos: `[_ , _ , G , F , E , D , _ , _]`
-3. Rellenar con orden relativo de **P0** saltando lo ya copiado (`G,F,E,D`):
-   P0 filtrado -> `[A, B, C, H]`
-4. Colocar en huecos por orden: posiciones 0,1,6,7 -> `[A, B, C, H]`
+    - $d(P0,P1)=0.00$ (mismas aristas, sentido inverso)
+    - $d(P0,P2)=d(P0,P3)=d(P0,P6)=0.40$
+    - $d(P2,P3)=d(P2,P6)\approx 0.545$
+    - $d(P3,P6)\approx 0.667$
 
-Hijo OX (#1):
-`[A, B, G, F, E, D, C, H]`
+4. **Analogía natural**
 
-> OX no mira distancias; solo preserva el segmento de P1 y rellena respetando el orden de P0.
+    Apareamiento **preferencial por disimilitud**: individuos más distintos producen descendencia con **variación** mayor, lo que mejora la **exploración** y reduce la **convergencia prematura**.
 
-#### Ejemplo SCX (pareja #4: P0, P6) con la **matriz de distancias** dada
+### Cruces (pc): generar hijos con mezcla **EAX-lite** (`eaxFrac`) y **SCX/OX**; **SCX** sesgado por **histograma de aristas** (`edgeLambda`)
 
-Padres:
+En esta fase cada **pareja** de padres produce **cero o un hijo**: se lanza una "moneda" con probabilidad $p_c$ de **cruzar**; si **no** se cruza, el **hijo es copia** del primer padre. Para los cruces efectivos, una fracción `eaxFrac` se hace con **EAX-lite** (mezcla de **adyacencias** de ambos padres) y el resto con **SCX** (o **OX** si SCX no aplica). SCX, además, se **sesga** con un **histograma de aristas** construido a partir del **top** de la población: aristas más **frecuentes** reciben una **bonificación** ponderada por `edgeLambda`. Con la **configuración** dada (N=10, $C=6$, `pc=0.95`, `eaxFrac=0.33`, `edgeTopFrac=0.5`, `edgeFreqPeriod=2`, `edgeLambda=0.20`) esperamos $\approx 5$–$6$ cruces totales, de los cuales $\approx 2$ serán **EAX-lite** y $\approx 3$–$4$ **SCX**.
 
-* P0 = `[A, B, C, D, E, F, G, H]`
-* P6 = `[A, B, C, D, F, E, G, H]`
+1. **Parejas y moneda de cruce ($p_c$)**
 
-Regla SCX: en cada paso, desde `current`, mirar `next1[current]` (siguiente en P0) y `next2[current]` (siguiente en P6), elegir **el no usado** más **cercano** según la matriz. Si ninguno es válido, elegir el **no usado** más cercano global.
+    - **Parejas** (del paso anterior):
+      $[P1,P0], [P2,P0], [P3,P1], [P0,P6], [P1,P0], [P6,P1]$ (en ese orden).
+    - **Moneda** con `pc=0.95` por pareja (ejemplo consistente con $p_c$ alto):
+      \#1 **Sí**, #2 **Sí**, #3 **Sí**, #4 **Sí**, #5 **NO**, #6 **Sí** -> 5 cruces + 1 copia.
+    - **Asignación de operadores** (respetando $eaxFrac \approx 0.33$ sobre 5 cruces $\approx$ **2 EAX-lite** y **3 SCX**):
 
-Pasos (distancias de la tabla):
+      - \#1 **EAX-lite** (P1 $\times$ P0)
+      - \#2 **SCX** (P2 $\times$ P0)
+      - \#3 **EAX-lite** (P3 $\times$ P1)
+      - \#4 **SCX** (P0 $\times$ P6)
+      - \#5 **copia** de P1 (sin cruce)
+      - \#6 **SCX** (P6 $\times$ P1)
 
-* Inicio: `current=A`, candidatos: `B` (P0) y `B` (P6).
-  `d(A,B)=2` -> elegir `B`. Hijo: `[A,B]`.
-* `current=B`, candidatos: `C` (P0) y `C` (P6).
-  `d(B,C)=2` -> `C`. Hijo: `[A,B,C]`.
-* `current=C`, candidatos: `D` (P0) y `D` (P6).
-  `d(C,D)=2` -> `D`. Hijo: `[A,B,C,D]`.
-* `current=D`, candidatos: `E` (P0, d=3) y `F` (P6, d=5).
-  Elegir `E`. Hijo: `[A,B,C,D,E]`.
-* `current=E`, candidatos: `F` (P0, d=2) y `G` (P6, d=4) -> `F`.
-* `current=F`, candidatos: `G` (P0, d=2) y `E` (P6, usado) -> `G`.
-* `current=G`, candidatos: `H` (P0, d=2) y `H` (P6, d=2) -> `H`.
+    > Resultado esperado: `childrenC = [c1(EAX), c2(SCX), c3(EAX), c4(SCX), copy(P1), c6(SCX)]`.
 
-Hijo SCX (#4):
-`[A, B, C, D, E, F, G, H]`  (en esta instancia, SCX reconstruye el camino "lineal" porque sus vecinos inmediatos son siempre los más cercanos en la matriz).
+2. **Qué hace EAX-lite (mezcla de adyacencias)**
 
-> SCX sí usa distancias: en `D` prefirió `E` (3) sobre `F` (5). En instancias más "irregulares" SCX arma hijos distintos y, a menudo, de mejor costo inicial.
+    **Idea:** cada ciudad tiene dos vecinos (prev/next) en cada padre (ciclo cerrado). **EAX-lite** toma, en cada paso, los **candidatos adyacentes** de ambos padres para el **nodo actual** y elige el que **minimiza** la distancia (con desempates estables). Si el mejor candidato ya fue usado, intenta el alterno; si **ninguno** es válido, cae a un **fallback** (p. ej., el no-usado más cercano).
+
+    **Ejemplo (pareja #3: P3 $\times$ P1)** con la **matriz de distancias** del problema:
+
+      - P3 = $[A,C,B,D,E,F,G,H]$ -> vecinos de $A$: $\{H,C\}$; de $B$: $\{C,D\}$; ...
+      - P1 = $[A,H,G,F,E,D,C,B]$ -> vecinos de $A$: $\{B,H\}$; de $B$: $\{A,C\}$; ...
+
+    **Construcción paso a paso:**
+
+      - **Inicio $A$**: candidatos de adyacencia $\{C,H,B\}$. Distancias: $d(A,B)=2$, $d(A,H)=3$, $d(A,C)=4$ -> **elige $B$**. Hijo parcial: $[A,B]$.
+      - **Actual $B$**: vecinos combinados $\{C,D,A\}$; $A$ ya usado. Distancias: $d(B,C)=2$, $d(B,D)=4$ -> **$C$**. Hijo: $[A,B,C]$.
+      - **Actual $C$**: vecinos $\{B,D\}$; $B$ usado. $d(C,D)=2$ -> **$D$**. Hijo: $[A,B,C,D]$.
+      - **Actual $D$**: vecinos $\{E,C\}$; $C$ usado. $d(D,E)=3$ -> **$E$**. Hijo: $[A,B,C,D,E]$.
+      - **Luego**: $E\to F$ ($d=2$); $F\to G$ ($d=2$); $G\to H$ ($d=2$).
+      - **Hijo EAX-lite #3:** $[A,B,C,D,E,F,G,H]$.
+
+    > Observación: en esta **instancia regular**, las adyacencias de los padres ya reflejan cercanías reales, por lo que EAX-lite reconstruye un **camino lineal** de costo bajo. En instancias **irregulares**, EAX-lite suele **combinar tramos** de ambos padres que no están alineados en un solo padre, generando hijos **mejores** que OX sin necesitar tantos pasos de 2-opt.
+
+3. **Qué hace SCX (constructivo secuencial) y cómo se sesga con el histograma**
+
+    **Idea:** partir de un **nodo actual**; mirar el **siguiente** en cada padre (dos candidatos) y elegir el **más cercano** que no esté usado. Si ambos fallan, tomar el **no usado** más cercano globalmente.
+
+    **Sesgo por histograma de aristas.**
+    Antes de puntuar candidatos, SCX incorpora un **término de bonificación** proporcional a la **frecuencia normalizada** de la arista en el **top** `edgeTopFrac` de la población (aquí, **top-5**: P0,P1,P3,P6,P2). Aristas muy frecuentes (p. ej., $\{B,C\}$) reciben un "empuje" adicional ponderado por `edgeLambda=0.20`, inclinando la elección hacia **patrones** que el grupo "considera" prometedores. Ejemplos (no dirigidas):
+
+      - $\{B,C\}$ aparece en **P0, P1, P2, P3, P6** -> frecuencia **1.0** (5/5).
+      - $\{A,B\}$ aparece en **P0, P2, P6** -> **0.6**.
+      - $\{D,E\}$ aparece en **P0, P3** -> **0.4**.
+        Esta señal actúa como **"memoria colectiva"** de aristas buenas.
+
+    **Ejemplo (pareja #4: P0 $\times$ P6).**
+
+      - P0 = $[A,B,C,D,E,F,G,H]$
+      - P6 = $[A,B,C,D,F,E,G,H]$
+
+    **Construcción SCX (con sesgo):**
+
+      - $A$: candidatos $B$ (de ambos). $d(A,B)=2$ y $\text{freq}(\{A,B\})=0.6$ -> **$B$**.
+      - $B$: candidatos $C$ (de ambos). $d(B,C)=2$, $\text{freq}(\{B,C\})=1.0$ -> **$C$**.
+      - $C$: candidatos $D$ (de ambos). $d(C,D)=2$, $\text{freq}(\{C,D\})$ alta -> **$D$**.
+      - $D$: candidatos **E** (P0) y **F** (P6).
+          - Costes base: $d(D,E)=3$ vs. $d(D,F)=5$.
+          - Bonificación: $\{D,E\}$ aparece en top-5 (p. ej., P0,P3) => **favorecida**. -> **$E$**.
+      - Continúa: $E\to F$ ($d=2$), $F\to G$ ($d=2$), $G\to H$ ($d=2$).
+      - **Hijo SCX #4:** $[A,B,C,D,E,F,G,H]$.
+
+    > El sesgo por histograma **no** sustituye a la distancia: la **distancia manda** y `edgeLambda` sólo **inclina** la elección cuando hay cercanías competitivas o empates. En problemas ruidosos, este sesgo ayuda a **consolidar building blocks** observados en la élite.
+
+4. **Qué hace OX y cuándo aparece**
+
+    **OX** preserva un **segmento** del primer padre y rellena los huecos con el **orden relativo** del segundo, **sin** mirar distancias. En este flujo, OX actúa como **alternativa** cuando SCX no aplica o en configuraciones que lo seleccionan explícitamente (SCX OFF).
+    **Ejemplo (rápido, pareja #1: P1 $\times$ P0):**
+
+      - P1 = $[A,H,G,F,E,D,C,B]$, P0 = $[A,B,C,D,E,F,G,H]$.
+      - Segmento en P1: $[G,F,E,D]$ -> hijo con huecos: $[\,\_,\,\_,G,F,E,D,\,\_,\,\_]$.
+      - Relleno con orden de P0, saltando lo ya copiado: $[A,B,C,H]$ en huecos.
+      - **Hijo OX:** $[A,B,G,F,E,D,C,H]$.
+
+    > OX favorece **diversidad** de orden pero suele requerir **2-opt** posterior para pulir distancias.
+
+5. **Copia cuando "falla" la moneda**
+
+    Con probabilidad $1-p_c$ la pareja **no** se cruza y el **hijo es copia** del primer padre. En nuestro ejemplo (#5), hijo = **P1**. Esto da **estabilidad**: si `pc` no es 1.0, una porción de hijos serán **"repass"** de tours buenos que vuelven a competir en la siguiente generación.
+
+6. **Resultados del ejemplo (resumen de esta generación)**
+
+    - **Hijos por cruce** (posible set, coherente con las reglas):
+        - \#1 **EAX-lite** (P1 $\times$ P0) -> hijo cercano al camino lineal.
+        - \#2 **SCX** (P2 $\times$ P0) -> respeta cercanías y patrón del histograma.
+        - \#3 **EAX-lite** (P3 $\times$ P1) -> combina adyacencias y reproduce segmentos cortos.
+        - \#4 **SCX** (P0 $\times$ P6) -> $[A,B,C,D,E,F,G,H]$.
+        - \#6 **SCX** (P6 $\times$ P1) -> sigue vecinos cortos con sesgo por aristas frecuentes.
+    - **Copia**: #5 = **P1**.
+    - **Conteos**: 5 **hijos cruzados** (2 por EAX-lite, 3 por SCX) + 1 **copia**.
+
+    > Estos hijos, junto con los **2 sobrevivientes** y los **2 mutados puros** (fase siguiente), alimentan el **pool de 2-opt** y el **bloque memético** de élites más adelante, donde se afina la calidad.
+
+7. **Analogía natural (realidad)**
+
+    - $p_c$ modela la **probabilidad de apareamiento** exitoso.
+    - **EAX-lite/SCX** representan **recombinación** genética: EAX-lite mezcla **adyacencias** (estructura local del "genoma tour") y SCX **construye** siguiendo señales de "buena compatibilidad" (distancias cortas y aristas "preferidas" por la población).
+    - El **histograma** actúa como una forma de **selección social**: favorece combinaciones que la "comunidad" de individuos exitosos usa con frecuencia (building blocks heredables).
 
 ### Mutación ligera en hijos de cruce (pm)
 
-Ahora, **por cada hijo de cruce**, lanzas una moneda con probabilidad `pm` para decidir si aplicas **una sola** mutación ligera:
+Tras generar los **hijos por cruce**, cada hijo decide —con probabilidad $p_m$— si sufre **exactamente una** mutación **ligera** del tipo *insertion* o *swap*. El objetivo es introducir **variación fina** sin desarmar el patrón heredado en el cruce (EAX-lite/SCX/OX). Con la **configuración** dada (N=10, $C=6$, `pc=0.95`, `pm=0.30`) esperamos alrededor de **1–2** mutaciones ligeras en los \~**5–6** hijos que típicamente resultan del cruce.
 
-* Regla del código: para cada hijo `h` en `childrenC`
+1. **¿A qué individuos aplica?**
 
-  * con prob. `pm` -> aplicar **insertion** (70%) o **swap** (30%)
-  * con prob. `1 - pm` -> no hacer nada
-* Nota: esto **no** toca a los hijos "copy" de la fase de cruce, salvo que también sean parte de `childrenC`.
+    Se recorre la lista `childrenC` (hijos salidos de la fase de cruce). Si alguna pareja **no** cruzó (moneda falló) y produjo un **"copy"** del padre1, ese "copy" **sí** está en `childrenC` y por tanto **puede** mutar. Los **sobrevivientes (S%)** y los **mutados puros (M%)** no se tocan aquí.
 
-Valores típicos:
+2. **Probabilidad y regla exacta**
 
-* En berlin52, si `pm=-1` -> el código usa `pm = 1/n`. Con `n=52`, `pm $\approx$ 0.019`. Con 6 hijos -> se espera `6 * 0.019 $\approx$ 0.11` mutaciones (casi siempre 0, a veces 1).
-* Para ver mutaciones en el ejemplo didáctico, usemos `pm = 0.30` -> se espera `6 * 0.30 = 1.8` mutaciones.
+     Para cada hijo $h\in$ `childrenC`:
 
-Ejemplos sobre hijos concretos:
+    - Con prob. $p_m$ -> aplicar **una** mutación ligera:
+      — *insertion* con prob. **0.70**
+      — *swap* con prob. **0.30**
+    - Con prob. $1-p_m$ -> **no** mutar.
+      Si `pm = -1`, el código establece $p_m = 1/n$ (práctica común en TSP). Con $n=8$ (nuestro juguete), $p_m \approx 0.125$. En la **configuración** que usamos para didáctica fijamos `pm = 0.30` para observar cambios.
 
-* Ejemplo `c1` viene del OX de la pareja #1:
-  `c1 = [A, B, G, F, E, D, C, H]`
+3. **Operadores ligeros (qué hacen y por qué son "ligeros")**
 
-  * **Insertion** (70%): elige índices `i=3`, `j=6` (0-based).
-    Quitar `C` de posición 6 e insertarlo en 3:
-    antes -> `[A, B, G, F, E, D, C, H]`
-    quitar `C` -> `[A, B, G, F, E, D, H]`
-    insertar `C` en `i=3` -> `[A, B, G, C, F, E, D, H]`
-  * **Swap** (30%): elige `i=1`, `j=4`. Intercambia `B` y `E`:
-    `[A, E, G, F, B, D, C, H]`
+    - **Insertion(i->j)**: extrae el nodo en posición $j$ y lo inserta en $i$. Modifica **dos** "cortes" del recorrido; suele tener efecto **local** y preserva mucho del orden heredado.
+    - **Swap(i,j)**: intercambia los nodos en $i$ y $j$. Es aún más simple; también altera pocos bordes y mantiene gran parte de la estructura.
 
-* Ejemplo `c4` viene del SCX de la pareja #4 y era lineal:
-  `c4 = [A, B, C, D, E, F, G, H]`
+    > Ambos operadores **conservan una permutación válida** (sin duplicados/omisiones) y no cambian el tamaño del tour.
 
-  * **Insertion** `i=2`, `j=5` (mueve `F` a la pos 2):
-    antes -> `[A, B, C, D, E, F, G, H]`
-    quitar `F` -> `[A, B, C, D, E, G, H]`
-    insertar en 2 -> `[A, B, F, C, D, E, G, H]`
+4. **Ejemplos sobre hijos concretos**
 
-Observación: esta mutación **ligera** introduce variación sin "romper" completamente la estructura heredada del cruce.
+     Para fijar ideas, toma dos hijos de la fase previa (ver "Cruces"):
+
+    - $c_4 = [A,B,C,D,E,F,G,H]$ (SCX de la pareja #4)
+    - $c_1 = [A,B,G,F,E,D,C,H]$ (posible hijo por EAX/OX en la #1)
+
+    **a. Insertion sobre $c_4$ (mover $F$ a posición 2):**
+
+      - Antes: $[A,B,C,D,E,\underline{F},G,H]$
+      - Quitar $F$ (pos 5) -> $[A,B,C,D,E,G,H]$
+      - Insertar en pos 2 -> $[A,B,\underline{F},C,D,E,G,H]$
+        Este cambio reemplaza aristas $\{E,F\},\{F,G\}$ por $\{B,F\},\{F,C\}$. El **costo** se reevalúa con la matriz $d_{ij}$ (tabla de configuración).
+
+    **b. Swap sobre $c_1$ (intercambiar $B$ y $E$):**
+
+      - Antes: $[A,\underline{B},G,F,\underline{E},D,C,H]$
+      - Después: $[A,E,G,F,B,D,C,H]$
+        Sustituye $\{A,B\},\{B,G\}$ y $\{F,E\},\{E,D\}$ por $\{A,E\},\{E,G\}$ y $\{F,B\},\{B,D\}$. El efecto es **local** (pocos bordes cambiados) y puede acercar el hijo a un valle mejor que luego **2-opt** explotará.
+
+5. **Valor esperado de mutaciones en esta iteración**
+
+     Con `pc=0.95` sobre 6 parejas, esperamos $\mathbb{E}[\text{cruces}] \approx 5.7$. Con `pm=0.30`, $\mathbb{E}[\text{mutaciones}] \approx 5.7 \times 0.30 \approx 1.7$ (típicamente **1 o 2** mutaciones). Si `pm = 1/n` y $n=8$, $\mathbb{E} \approx 5.7 \times 0.125 \approx 0.7$ (a veces **0**, a veces **1**).
+
+6. **Interacciones con el resto del flujo**
+
+    - **twoOptProb**: una mutación ligera que "acerca" nodos compatibles facilita que **2-opt** encuentre una mejora inmediata.
+    - **edgeLambda / histograma**: la mutación puede introducir aristas **no** favorecidas por el histograma; si son buenas, acabarán subiendo su frecuencia en generaciones siguientes.
+    - **M% (mutación pura)**: complementa a `pm`. Si `M%` es bajo, conviene **no** hacer `pm` demasiado pequeño para evitar estancamiento.
+
+7. **Analogía natural (realidad)**
+
+     Corresponde a **mutaciones puntuales** en genética: cambios **pequeños** en la "cadena" (orden del tour) que incrementan la **variabilidad** sin destruir rasgos heredados que ya son buenos. Un $p_m$ moderado equilibra **exploración** (variar) y **explotación** (conservar).
 
 ### Mutación pura (bloque M%)
 
-Ahora toca **crear M individuos nuevos** exclusivamente por mutación. Con `M = 2`:
+En esta fase se **inyecta diversidad garantizada** creando **M individuos nuevos** **únicamente** por mutación, independientemente de lo ocurrido en el cruce. A diferencia de la mutación ligera (`pm`) —que es condicional— aquí **siempre** se aplica **exactamente una** mutación (insertion o swap) por individuo del bloque **M**. Con la configuración de ejemplo $N=10,\ S=2,\ C=6,\ M=2$ se generan **2** mutados puros.
 
-* Para cada uno:
+1. **Cuántos se crean (cómputo de $M$)**
 
-  * Elegir un **tour base** al azar de la población actual (con reemplazo).
-  * Aplicar **siempre** una mutación (insertion o swap).
-* Aquí **no interviene `pm`** (mutación garantizada).
+    Se normaliza $S{+}C{+}M=1$ y luego se enteriza por $N$. En el ejemplo:
 
-Ejemplos concretos:
+    $S=2,\ C=6,\ M=2\Rightarrow S{+}C{+}M=10=N$.
 
-* `m0` desde `P9 = [A, C, D, E, F, G, H, B]`
-  **Insertion** `i=2`, `j=7` (mover `B` a pos 2):
-  antes -> `[A, C, D, E, F, G, H, B]`
-  quitar `B` -> `[A, C, D, E, F, G, H]`
-  insertar en 2 -> `[A, C, B, D, E, F, G, H]`
+2. **De dónde salen los tours base**
 
-* `m1` desde `P4 = [A, B, D, C, E, F, H, G]`
-  **Swap** `i=2`, `j=3` (intercambia `D` y `C`):
-  `[A, B, C, D, E, F, H, G]`
+    Para cada uno de los $M$ individuos: **tomar al azar (con reemplazo)** un tour **de la población actual** (P0..P9) como **base** y clonarlo para mutarlo. No depende de `pm` ni de los hijos de cruce.
 
-Resultado acumulado de la generación (sin contar 2-opt ni elitismo aún):
+3. **Operación aplicada (siempre 1 por individuo)**
 
-* Survivors S = 2 -> `[P0, P1]`
-* Hijos por cruce C = 6 -> `childrenC` (con algunas mutaciones ligeras según `pm`)
-* Hijos por mutación M = 2 -> `childrenM = [m0, m1]`
+    - **Insertion** (70%): extrae el nodo en posición $j$ e **inserta** en posición $i$.
+    - **Swap** (30%): **intercambia** los nodos en posiciones $i$ y $j$.
 
-Total -> `2 + 6 + 2 = 10` individuos para la nueva población (*tamaño N se mantiene*).
+      Ambas preservan una permutación válida y cambian **pocos** bordes (variación fina pero garantizada).
 
-### 2-opt ocasional con twoOptProb
+4. **Ejemplos concretos (con la población del escenario)**
 
-1. Cuántos hijos se intentan pulir
+      Población (costos precalculados):
 
-   * hijosNuevos = len(childrenC) + len(childrenM) = 6 + 2 = 8
-   * poolSize = max(1, int(twoOptProb \* hijosNuevos))
+      P0: $[A,B,C,D,E,F,G,H]$ $18$, P1: $[A,H,G,F,E,D,C,B]$ $18$, …, P9: $[A,C,D,E,F,G,H,B]$ $20$.
 
-     * con twoOptProb=0.30 -> int(0.3\*8)=2 -> se eligen 2 hijos distintos al azar
-   * No crea individuos nuevos; modifica "in situ". Siempre >= 1 por el `max(1, …)`.
+    - **m0** desde **P9** $[A,C,D,E,F,G,H,B]$ — *Insertion* $i{=}2,\ j{=}7$:
 
-2. Qué hace exactamente 2-opt (en tu código `apply2optOnce`)
+      quitar $B$ -> $[A,C,D,E,F,G,H]$;\ insertar en $i=2$ -> $[A,C,\underline{B},D,E,F,G,H]$.
 
-   * Recorre pares de aristas no adyacentes y evalúa el cambio de costo al **revertir** el subsegmento t\[i..j].
-   * Reemplaza aristas (t\[i−1], t\[i]) y (t\[j], t\[j+1]) por (t\[i−1], t\[j]) y (t\[i], t\[j+1]) (con wrap en extremos).
-   * Si encuentra alguna mejora ($\Delta$ < 0), aplica **una sola** inversión "mejor encontrada" y termina. Si no hay mejora, no cambia el tour.
+      Se sustituyen bordes $\{H,B\},\{B,A\}$ por $\{C,B\},\{B,D\}$ (evaluables con $d_{ij}$).
 
-3. Selección del pool (ejemplo)
+    - **m1** desde **P4** $[A,B,D,C,E,F,H,G]$ — *Swap* $i{=}2,\ j{=}3$:
 
-   * Supón que el muestreo elige `{c3, m1}` de los 8 hijos nuevos.
+      $[A,B,\underline{C},\underline{D},E,F,H,G]$.
 
-4. Ejemplo 2-opt con mejora (sobre c3)
+      Cambian $\{B,D\},\{D,C\}$ a $\{B,C\},\{C,D\}$, acercándose a la cadena "lineal".
 
-   * Antes (c3): `[A, B, G, C, F, E, D, H]`  (uno de los hijos de cruce)
-   * El algoritmo detecta que revertir el segmento i..j = 2..6 (\[G, C, F, E, D]) mejora.
-   * Aristas que se reemplazan:
+5. **Resultado parcial de la generación (antes de 2-opt y elitismo)**
 
-     * Antes: (B,G) y (D,H) -> d(B,G)=3, d(D,H)=9 -> suma antes = 12
-     * Después: (B,D) y (G,H) -> d(B,D)=4, d(G,H)=2 -> suma después = 6
-     * $\Delta$ = 6 − 12 = −6 (mejora de 6 unidades)
-   * Se invierte el subsegmento 2..6: `[G, C, F, E, D]` -> `[D, E, F, C, G]`
-   * Después (c3’): `[A, B, D, E, F, C, G, H]`
-   * Comentario: 2-opt "descruza" aristas largas y suele bajar costo sin introducir ruido aleatorio.
+    - **Survivors $S$**: 2 -> $[P0,P1]$.
+    - **Hijos por cruce $C$**: 6 -> `childrenC` (algunos con mutación ligera por `pm`).
+    - **Mutación pura $M$**: 2 -> `childrenM = [m0, m1]`.
+      **Total**: $2+6+2=10$ individuos (se mantiene $N$). Estos $M$ también entran al **pool de 2-opt** y al flujo memético posterior.
 
-5. Ejemplo 2-opt sin mejora (sobre m1)
+6. **Interacciones y propósito**
 
-   * Antes (m1), p.ej. el hijo por mutación pura: `[A, B, C, D, E, F, H, G]`
-   * `apply2optOnce` prueba pares (i,j); con la matriz dada, ninguna inversión reduce el costo.
-   * Después (m1’): queda igual.
+    - **Garantiza diversidad** aunque `pm` sea bajo o el cruce produzca hijos muy parecidos.
+    - Puede **introducir aristas** que el histograma aún no favorece; si son buenas, su frecuencia subirá en generaciones futuras.
+    - Complementa la **exploración** de *assortative*, especies y catástrofes.
 
-### Elitismo (`--elitism`)
+7. **Analogía natural (realidad)**
 
-1. ¿Cuántos élites?
+    Equivale a **mutaciones espontáneas** (o **inmigración genética**) que **no dependen** del apareamiento: pequeñas alteraciones que aseguran **variabilidad** de fondo en cada generación, reduciendo la probabilidad de **convergencia prematura**.
 
-   * Fórmula: `elites = max(1, int(N * elitism))`.
-   * Con `N=10` y `elitism=0.10` -> `elites = 1`.
+### 2-opt ocasional con twoOptProb con *first-improve* y **flocking** en desempates
 
-2. ¿Cuándo aplica y qué hace?
+Tras generar los **hijos nuevos** (cruces $C$ y mutación pura $M$), se selecciona una **muestra** para aplicar **una sola** mejora *2-opt* por individuo. *2-opt* "descruza" el tour invirtiendo un subsegmento si reduce el costo. En nuestra **configuración**: $C{=}6$, $M{=}2$ => hijosNuevos $= 8$; con `twoOptProb=0.30` => $\text{poolSize}=\max(1,\lfloor 0.3\cdot8\rfloor)=2$. Estos **2** candidatos se eligen al azar **entre los 8 hijos nuevos** (no incluye a los dos sobrevivientes S).
 
-   * Tras armar `newPop = survivors + childrenC + childrenM` (ya se tienes S=2, C=6, M=2 -> tamaño 10).
-   * Se **sobrescriben** las primeras posiciones de `newPop` con los **mejores de la generación anterior**:
-     `newPop[:elites] = pop[:elites]`
-   * No añade individuos; **no cambia N**. Solo garantiza que el mejor "antiguo" esté presente.
+1. **Cuántos se pulen (cálculo del pool)**
 
-3. Ejemplo concreto con nuestro flujo
+    - $\text{hijosNuevos} = |childrenC| + |childrenM| = 6 + 2 = 8$.
+    - $\text{poolSize} = \max(1,\lfloor \text{twoOptProb}\cdot \text{hijosNuevos}\rfloor)$.
+    - Con `twoOptProb=0.30` => $\text{poolSize}=2$. No crea individuos; **modifica en sitio**.
 
-   * Antes del elitismo (supongamos):
+2. **Qué hace exactamente *2-opt* (regla y coste $\Delta$)**
 
-     ```bash
-     survivors = [P0(18), P1(18)]
-     childrenC = [c1, c2, c3, c4, copy, c6]
-     childrenM = [m0, m1]
-     newPop_pre = [P0(18), P1(18), c1, c2, c3, c4, copy, c6, m0, m1]  # tamaño 10
-     ```
+     Sea un tour $t=[t_0,\dots,t_{n-1}]$. *2-opt* elige índices $0<i<j<n$ **no adyacentes** y propone **invertir** el subsegmento $t[i..j]$. Eso reemplaza aristas
 
-   * `pop[:elites]` son los mejores **de la generación anterior** (ordenada). Aquí: `[P0(18)]`.
-   * Aplicar elitismo:
-     `newPop_pre[:1] = [P0(18)]` -> en este caso **no cambia nada** (ya estaba P0 en `newPop_pre[0]`).
-   * Luego el código **ordena** `newPop` por costo:
+     $(t_{i-1}, t_i)$ y $(t_j, t_{j+1})$
 
-     ```bash
-     newPop = sorted(newPop_pre, key=fitness)
-     ```
+    por
 
-     * Si algún hijo (p. ej., `c3`) resulta mejor que 18, tras ordenar quedará **primero**.
-     * El elitismo no "bloquea" al mejor nuevo; solo asegura que **P0** no se pierda si todo lo demás saliera peor.
+    $(t_{i-1}, t_j)$ y $(t_i, t_{j+1})$
 
-4. ¿Y si S=0 o S muy bajo?
+    (usando *wrap-around* para $t_{-1}\equiv t_{n-1}$ y $t_{n}\equiv t_0$).
 
-   * El elitismo sigue **inyectando** al menos un mejor de la gen. anterior.
-   * Sirve de "airbag" si por azar C/M generan población floja.
+    El cambio de costo es
 
-5. ¿Puede duplicar individuos?
+    $$
+    \Delta = d(t_{i-1},t_j) + d(t_i,t_{j+1}) \;-\; \big(d(t_{i-1},t_i)+d(t_j,t_{j+1})\big).
+    $$
 
-   * Sí, puede haber duplicados (p. ej., `P0` ya estaba en `survivors` y además entra por elitismo).
-   * No hay deduplicación en esta fase; la diversidad se maneja con `k`, `M%`, `pm`, etc.
+    Si $\Delta<0$, **aplica** la inversión y **termina** (política *first-improve* por eficiencia). Si no encuentra mejora, no cambia el tour.
 
-### Cierre de generación
+3. **Flocking (desempates)**
 
-1. Ajuste de tamaño (si aplica)
+    Si hay varias mejoras con $\Delta$ muy similares, se prefiere la que **introduce aristas más cortas** (minimiza $d(t_{i-1},t_j)+d(t_i,t_{j+1})$). Este sesgo "gregario" guía hacia **vecindarios** con bordes cortos, potenciando el descenso posterior.
 
-   * Recortar o rellenar para que `len(newPop) == N`.
+4. **Selección del pool (ejemplo)**
 
-2. Ordenar por costo
+    Supón que el muestreo elige $\{c_3, m_1\}$ de los 8 hijos nuevos (ver secciones previas).
 
-   * `newPop.sort(key=fitness)`  -> el mejor de la generación queda en `newPop[0]`.
+5. **Ejemplo *2-opt* con mejora (sobre $c_3$)**
 
-3. Actualizar métricas
+    Antes: $c_3=[A, B, G, C, F, E, D, H]$.
 
-   * `currBest = newPop[0]`, `currCost = fitness(currBest)`.
-   * `best/bestCost` y `history`:
+    Prueba invertir $i..j = 2..6$ (subsegmento $[G,C,F,E,D]$).
 
-     * `history.append( min(history[-1], currCost) )`  -> guarda el **best-so-far** por generación.
-     * Si `currCost < bestCost`: actualizar `best`, reiniciar `noImprove`, registrar `events`, opcionalmente `saveFrame`.
+    - Antes, aristas "de corte": $(B,G)$ y $(D,H)$ => $d(B,G)=3$, $d(D,H)=9$ => suma $=12$.
+    - Después: $(B,D)$ y $(G,H)$ => $d(B,D)=4$, $d(G,H)=2$ => suma $=6$.
+      $\Delta = 6-12=-6$ (**mejora 6**).
+      Se invierte => $c_3'=[A,B,D,E,F,C,G,H]$.
+      Comentario: acorta bordes largos y elimina "cruces" innecesarios.
+
+6. **Ejemplo *2-opt* sin mejora (sobre $m_1$)**
+
+    Antes: $m_1=[A,B,C,D,E,F,H,G]$.
+
+    Se exploran pares $(i,j)$; con la matriz dada, ninguna inversión produce $\Delta<0$. Tour permanece igual.
+
+7. **Interacciones y efecto en el flujo**
+
+    - **Con cruces (SCX/EAX-lite):** *2-opt* "pulimenta" hijos razonables, consiguiendo bajadas rápidas sin añadir ruido.
+    - **Con histograma de aristas:** al favorecer aristas cortas, *2-opt* puede aumentar la **frecuencia** de ciertos bordes en la élite, que luego sesgará SCX.
+    - **Con bloque memético (3-opt acotado):** *2-opt* prepara el terreno; el 3-opt de élites captura mejoras que *2-opt* no puede.
+    - **Con especies/catástrofes:** si *2-opt* deja de encontrar mejoras, la **diversidad** global (especies, culling, catástrofes) abre nuevos valles.
+
+8. **Analogía natural (realidad)**
+
+    Equivale a **micro-ajustes locales** tras la recombinación: pequeñas reconfiguraciones que no cambian "genes" sino su **orden** para mejorar la "adaptación" inmediata. El sesgo **flocking** es como seguir "senderos conocidos" (bordes cortos) que la población ha mostrado valiosos.
