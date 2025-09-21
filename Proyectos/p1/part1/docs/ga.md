@@ -48,6 +48,99 @@ flowchart TD
   T --> E
 ```
 
+```mermaid
+sequenceDiagram
+  autonumber
+  participant GA as GA Runner
+  participant Timer as Timers
+  participant Pop as Poblacion
+  participant Sel as Seleccion Torneo k
+  participant Pair as Emparejamiento
+  participant Xov as Cruce EAX/SCX/OX
+  participant MutL as Mutacion ligera (pm)
+  participant MutP as Mutacion pura (M%)
+  participant TwoOpt as 2-opt (pool)
+  participant Meme as Bloque memetico
+  participant Reco as Recomposicion
+  participant Hist as Histograma aristas
+  participant Spec as Especies
+  participant Cat as Catastrofe
+  participant Log as Logging
+
+  GA->>Pop: Leer instancia y crear N (semillas + aleatorios)
+  Pop-->>GA: Poblacion inicial
+  GA->>Pop: Ordenar por costo y registrar best0
+
+  loop Generaciones
+    GA->>Timer: Consultar timeLimit
+    alt timeLimit alcanzado
+      Timer-->>GA: t >= timeLimit
+      GA-->>Log: STOP("time")
+    else continuar
+      Timer-->>GA: t < timeLimit
+    end
+
+    GA->>GA: Verificar noImprove >= stall
+    alt stall alcanzado
+      GA-->>Log: STOP("stall")
+    else continuar
+      GA-->>Log: OK stall
+    end
+
+    GA->>GA: Verificar gen >= maxIter
+    alt maxIter alcanzado
+      GA-->>Log: STOP("maxIter")
+    else continuar
+      GA-->>Log: OK maxIter
+    end
+
+    GA->>Pop: Tomar S% sobrevivientes
+    GA->>Sel: parentsNeeded = C*2 - torneo k
+    Sel-->>GA: Lista de padres
+    GA->>Pair: Emparejar (assortative ON/OFF)
+    Pair-->>Xov: Parejas formadas
+
+    Note over Xov: Por pareja, moneda pc.<br/>Fraccion eaxFrac usa EAX-lite.<br/>Resto usa SCX (sesgo histograma).<br/>OX solo si SCX OFF o no aplica.
+
+    Xov-->>GA: Hijos por cruce (childrenC)
+    GA->>MutL: Aplicar pm a childrenC (insertion/swap)
+    MutL-->>GA: childrenC'
+    GA->>MutP: Generar M% por mutacion pura (1x c/u)
+    MutP-->>GA: childrenM
+
+    GA->>TwoOpt: Muestrear con twoOptProb - first-improve + flocking
+    TwoOpt-->>GA: Hijos mejorados
+
+    GA->>Meme: Aplicar a elites (mem3OptSteps)
+    Meme-->>GA: Elites refinadas
+
+    GA->>Reco: Unir S + C + M-  anticlones - elitismo - ajustar a N
+    Reco-->>Pop: newPop ordenada
+
+    alt gen % edgeFreqPeriod == 0
+      GA->>Hist: Recalcular frecuencias en top edgeTopFrac
+      Hist-->>GA: Histograma actualizado
+    else no refresco
+      GA-->>Hist: Sin cambios
+    end
+
+    alt gen % speciesPeriod == 0
+      GA->>Spec: Cluster Jaccard y culling speciesCullFrac
+      Spec-->>Reco: Reposiciones aplicadas
+    else no especies
+      GA-->>Spec: Sin cambios
+    end
+
+    opt Estancamiento prolongado
+      GA->>Cat: Reemplazar catastropheFrac con double-bridge + 2-opt
+      Cat-->>Reco: Inmigrantes insertados
+    end
+
+    Reco-->>Log: Actualizar best/history/noImprove/gen (+CSV/frames)
+    GA->>GA: gen++
+  end
+```
+
 ## Configuración
 
 ### Ciudades y distancias (simétricas, enteras)
