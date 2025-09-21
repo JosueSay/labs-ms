@@ -102,7 +102,7 @@
 | **0 <= edgeLambda <= 1**                       | Peso razonable     | Sesgo estable (evitar forzar en exceso).  |
 | **0 < edgeTopFrac <= 1**                      | Muestra no vacía   | Histograma informativo.                   |
 | **edgeFreqPeriod >= 1**                       | Entero positivo    | Refresco programable.                     |
-| **speciesThresh ∈ (0,1]**                    | Umbral válido      | Clustering interpretable.                 |
+| **speciesThresh $\in$ (0,1]**                    | Umbral válido      | Clustering interpretable.                 |
 | **0 <= speciesCullFrac, catastropheFrac <= 1** | Fracciones válidas | Reemplazos controlados.                   |
 | **mem3OptSteps >= 0**                         | Entero             | Memético acotado.                         |
 
