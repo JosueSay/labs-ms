@@ -24,7 +24,7 @@ Guarda **un PNG** con el mejor tour y la evolución del costo. **No retorna** (e
 - `bestTour: List[int]` — orden del tour (0-based). Se cierra al inicio para trazar el ciclo.
 - `history: List[int]` — costos *best-so-far* por generación (eje X = índice).
 - `outPath: str` — ruta de salida del PNG.
-- `title: str` — texto para el título del panel izquierdo ("Mejor tour …").
+- `title: str` — texto para el título del panel izquierdo ("Mejor tour ...").
 
 **Detalles:**
 

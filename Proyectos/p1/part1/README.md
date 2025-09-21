@@ -71,7 +71,7 @@
 | `--crossover`       | float | \[0,1]          |                0.60 | Fracción C creada por cruce.                                                  |
 | `--mutation`        | float | \[0,1]          |                0.20 | Fracción M creada por mutación.                                               |
 | `--pc`              | float | \[0,1]          |                0.95 | Probabilidad de aplicar cruce a una pareja.                                   |
-| `--pm`              | float | \[0,1] o `-1`   |                  -1 | Mutación ligera a hijos (si `-1` ⇒ usa 1/n).                                  |
+| `--pm`              | float | \[0,1] o `-1`   |                  -1 | Mutación ligera a hijos (si `-1` => usa 1/n).                                  |
 | `--elitism`         | float | \[0,1]          |                0.05 | Fracción élite reinyectada.                                                   |
 | `--k`               | int   | >= 2             |                   5 | Tamaño de torneo (selección).                                                 |
 | `--scx`             | flag  | —               |                 off | Si está presente, usa **SCX** en lugar de **OX**.                             |

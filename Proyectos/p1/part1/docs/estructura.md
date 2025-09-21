@@ -32,7 +32,7 @@
 ### Entera (vector de enteros con repetición)
 
 * Si permites repeticiones o rangos $[1,n]$ sin restricción de unicidad, la mayoría de vectores **no son tours**.
-* Si fuerzas unicidad, terminas reinventando… **una permutación**.
+* Si fuerzas unicidad, terminas reinventando... **una permutación**.
 
 ### Float (reales)
 

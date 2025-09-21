@@ -15,7 +15,7 @@ Este módulo resuelve tres necesidades típicas al trabajar con TSP tipo TSPLIB:
   En **EUC_2D** usa `int(d + 0.5)` (no `round`) para evitar errores $\pm1$ en límites; en **GEO** usa `int(R*acos(...)+1.0)`. Esto replica fielmente los *benchmarks* TSPLIB.
 
 - **Cálculo vectorizado para EUC_2D.**
-  Con NumPy se computa la matriz de distancias en float64 y se redondea **exactamente** según TSPLIB, acelerando notablemente instancias medianas (n$\approx$100–2000). Para **GEO** se usa bucle clásico (la trigonometría domina y n suele ser bajo).
+  Con NumPy se computa la matriz de distancias en float64 y se redondea **exactamente** según TSPLIB, acelerando notablemente instancias medianas (n $\approx$ 100–2000). Para **GEO** se usa bucle clásico (la trigonometría domina y n suele ser bajo).
 
 - **Parser mínimo y robusto.**
   Lee `NAME`, `EDGE_WEIGHT_TYPE`, `NODE_COORD_SECTION` y devuelve coordenadas en orden; ignora el índice de la primera columna al cargar (se reindexa 0..n−1 internamente), lo cual simplifica el acceso.
