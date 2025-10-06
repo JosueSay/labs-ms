@@ -1,0 +1,4 @@
+instance,nCities,edgeType,status,objective,seconds
+cereza,189,EUC_2D,Not Solved,2920.724856,3604.15
+eil101,101,EUC_2D,Optimal,693.000000,3600.98
+gr229,229,GEO,Optimal,185778.000000,3602.13

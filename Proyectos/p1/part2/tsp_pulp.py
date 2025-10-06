@@ -1,99 +1,149 @@
+# Proyectos/p1/part2/tsp_pulp.py
+
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../part1")))
+
+import time
+import csv
 import pulp
 import numpy as np
+from io_tsp import parseTsp, buildDistanceMatrixCompressed, getDistance
 
-def read_coords(filename):
-    """Lee coordenadas de un archivo .tsp simple (formato TSPLIB)."""
-    coords = []
-    with open(filename) as f:
-        start = False
-        for line in f:
-            if "NODE_COORD_SECTION" in line:
-                start = True
-                continue
-            if start:
-                if "EOF" in line or line.strip() == "":
-                    break
-                parts = line.strip().split()
-                if len(parts) >= 3:
-                    coords.append((float(parts[1]), float(parts[2])))
-    return np.array(coords)
 
-def calc_dist_matrix(coords):
-    n = len(coords)
-    D = np.zeros((n, n))
+def build_full_distance(n, vec):
+    """Expande el vector comprimido (triángulo sup) a una matriz simétrica n x n."""
+    D = np.zeros((n, n), dtype=float)
     for i in range(n):
-        for j in range(n):
-            if i != j:
-                D[i, j] = np.linalg.norm(coords[i] - coords[j])
+        for j in range(i + 1, n):
+            dij = getDistance(i, j, n, vec)
+            D[i, j] = D[j, i] = float(dij)
     return D
 
-def solve_tsp_pulp(D):
+
+def solve_tsp_pulp(D, time_limit=3600, msg=1):
+    """
+    Resuelve TSP (formulación MTZ) con PuLP/CBC.
+    - time_limit: segundos máximos para CBC (por instancia).
+    """
     n = D.shape[0]
     prob = pulp.LpProblem("TSP", pulp.LpMinimize)
-    x = pulp.LpVariable.dicts("x", ((i, j) for i in range(n) for j in range(n) if i != j), cat="Binary")
-    u = pulp.LpVariable.dicts("u", (i for i in range(n)), lowBound=0, upBound=n-1, cat="Continuous")
+
+    # Variables
+    x = pulp.LpVariable.dicts(
+        "x",
+        ((i, j) for i in range(n) for j in range(n) if i != j),
+        cat="Binary"
+    )
+    u = pulp.LpVariable.dicts(
+        "u",
+        (i for i in range(n)),
+        lowBound=0,
+        upBound=n - 1,
+        cat="Continuous"
+    )
 
     # Objetivo
-    prob += pulp.lpSum(D[i, j] * x[i, j] for i in range(n) for j in range(n) if i != j)
+    prob += pulp.lpSum(D[i, j] * x[(i, j)] for i in range(n) for j in range(n) if i != j)
 
     # Restricciones de entrada/salida
     for i in range(n):
-        prob += pulp.lpSum(x[i, j] for j in range(n) if i != j) == 1
-        prob += pulp.lpSum(x[j, i] for j in range(n) if i != j) == 1
+        prob += pulp.lpSum(x[(i, j)] for j in range(n) if j != i) == 1
+        prob += pulp.lpSum(x[(j, i)] for j in range(n) if j != i) == 1
 
-    # Restricciones MTZ para eliminar subciclos
+    # Restricciones MTZ (eliminan subciclos)
     for i in range(1, n):
         for j in range(1, n):
             if i != j:
-                prob += u[i] - u[j] + n * x[i, j] <= n - 1
+                prob += u[i] - u[j] + n * x[(i, j)] <= n - 1
 
-    # Resolver
-    solver = pulp.PULP_CBC_CMD(msg=1)
+    # Solver con límite de tiempo
+    solver = pulp.PULP_CBC_CMD(msg=msg, timeLimit=time_limit)
+
+    t0 = time.time()
     prob.solve(solver)
+    seconds = time.time() - t0
 
-    # Extraer solución
-    tour = []
-    visited = set()
-    current = 0
-    for _ in range(n):
+    status_str = pulp.LpStatus[prob.status]
+    obj = float(pulp.value(prob.objective)) if pulp.value(prob.objective) is not None else float("nan")
+
+    # Reconstrucción del tour
+    def is_one(v): return v is not None and v > 0.5
+    succ = [-1] * n
+    for i in range(n):
         for j in range(n):
-            if current != j and pulp.value(x[current, j]) > 0.5:
-                tour.append(current)
-                visited.add(current)
-                current = j
+            if i != j and is_one(pulp.value(x.get((i, j)))):
+                succ[i] = j
                 break
-    tour.append(current)  # Regresar al inicio
 
-    cost = pulp.value(prob.objective)
-    return tour, cost
+    tour = []
+    if all(s != -1 for s in succ):
+        start = 0
+        cur = start
+        for _ in range(n):
+            tour.append(cur)
+            cur = succ[cur]
+            if cur == start:
+                break
+        if len(tour) != n or succ[tour[-1]] != start:
+            tour = []
+
+    return {"status": status_str, "objective": obj, "seconds": seconds, "tour": tour}
+
+
+def run_instances(instances, data_dir, csv_out="pulp_results.csv", time_limit=3600, msg=1):
+    """Corre las instancias y guarda resultados en CSV."""
+    rows = []
+    os.makedirs(os.path.dirname(csv_out) or ".", exist_ok=True)
+
+    for fname in instances:
+        tsp_path = os.path.join(data_dir, fname)
+        print(f"\n=== Resolviendo {fname} ===")
+        name, edge_type, coords = parseTsp(tsp_path)
+        n, vec = buildDistanceMatrixCompressed(coords, edge_type)
+        D = build_full_distance(n, vec)
+
+        res = solve_tsp_pulp(D, time_limit=time_limit, msg=msg)
+
+        print(f"Instancia: {name} | EDGE_WEIGHT_TYPE: {edge_type} | n={n}")
+        print(f"Status: {res['status']}")
+        print(f"Objective: {res['objective']:.6f}")
+        print(f"Tiempo (s): {res['seconds']:.2f}")
+        if res["tour"]:
+            print(f"Tour (0-index): {res['tour']} (cerrado en {res['tour'][0]})")
+        else:
+            print("Tour: (no reconstruido o solución parcial)")
+
+        rows.append({
+            "instance": name,
+            "nCities": n,
+            "edgeType": edge_type,
+            "status": res["status"],
+            "objective": f"{res['objective']:.6f}",
+            "seconds": f"{res['seconds']:.2f}"
+        })
+
+    # Guardar CSV
+    with open(csv_out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["instance", "nCities", "edgeType", "status", "objective", "seconds"])
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
+
+    print(f"\n[OK] CSV guardado en: {csv_out}")
+
 
 def main():
-    # Escenario 1: instancia pequeña
-    coords1 = read_coords("Proyectos/p1/part1/data/berlin52.tsp")
-    D1 = calc_dist_matrix(coords1)
-    tour1, cost1 = solve_tsp_pulp(D1)
-    print("Escenario 1 (berlin52):")
-    print("Tour:", tour1)
-    print("Costo:", cost1)
-    print()
+    data_dir = "Proyectos/p1/part1/data"
+    instances = ["cherry189.tsp", "eil101.tsp", "gr229.tsp"]
 
-    # Escenario 2: instancia personalizada 
-    coords2 = read_coords("Proyectos/p1/part1/data/cherry189.tsp")
-    D2 = calc_dist_matrix(coords2)
-    tour2, cost2 = solve_tsp_pulp(D2)
-    print("Escenario 2 (cherry189):")
-    print("Tour:", tour2)
-    print("Costo:", cost2)
-    print()
+    run_instances(
+        instances=instances,
+        data_dir=data_dir,
+        csv_out="Proyectos/p1/part2/pulp_results.csv",
+        time_limit=3600,   # 1 hora por instancia
+        msg=1
+    )
 
-    # Escenario 3: instancia mediana 
-    coords3 = read_coords("Proyectos/p1/part1/data/eil101.tsp")
-    D3 = calc_dist_matrix(coords3)
-    tour3, cost3 = solve_tsp_pulp(D3)
-    print("Escenario 3 (eil101):")
-    print("Tour:", tour3)
-    print("Costo:", cost3)
-    print()
 
 if __name__ == "__main__":
     main()
