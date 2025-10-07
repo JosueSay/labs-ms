@@ -30,8 +30,8 @@ flowchart TD
 
         %% Detalle de operadores
         L -->|OX| L_ox
-        L -->|SCX| L_scx
-        L -->|EAX-lite| L_eax
+        L -->|1- #40;--eaxFrac #41;| L_scx
+        L -->|--eaxFrac| L_eax
 
         %% Mutación ligera
         L --> N{¿mutación ligera? #40;pm#41;}
@@ -78,8 +78,17 @@ flowchart TD
     %% ------------------ SCX (Secuencial Constructivo) ------------------
     subgraph L_scx [SCX]
         direction TB
-        SCX1[Inicio en p1#91;0#93;<br>#40;hijo = #91;p1#91;0#93;#93;#41;] --> SCX2[Desde 'actual':<br>proponer next#40;p1#41; y next#40;p2#41;<br>si no usados]
-        SCX2 --> SCX3[Scoring:<br>score#40;u,v#41;=dist#40;u,v#41; - edgeLambda·freq#40;u,v#41;]
+
+        %% Histograma de frecuencias
+        SCX0{{¿Toca refrescar histograma#63;<br>#40;gen % edgeFreqPeriod == 0#41;}}
+        SCX0 -->|Sí| SCX_FREQ_RECALC[Recalcular freq de aristas<br>con top K = ⌊N · edgeTopFrac⌋]
+        SCX0 -->|No| SCX_FREQ_USAR[Usar freq vigente]
+        SCX_FREQ_RECALC --> SCX_FREQ_USAR
+
+        %% Inicio SCX
+        SCX_FREQ_USAR --> SCX1[Inicio en p1#91;0#93;<br>#40;hijo = #91;p1#91;0#93;#93;#41;]
+        SCX1 --> SCX2[Desde 'actual':<br>proponer next#40;p1#41; y next#40;p2#41;<br>si no usados]
+        SCX2 --> SCX3[Scoring:<br>score#40;u,v#41; = dist#40;u,v#41; − edgeLambda · freq#123;u,v#125;]
         SCX3 --> SCX4[Elegir el mejor candidato]
         SCX4 --> SCX5{¿Ambos usados#63;}
         SCX5 -->|Sí| SCX6[Usar KNN del 'actual'<br>#40;no usados#41;]
