@@ -41,29 +41,22 @@ El **Problema del Viajante de Comercio (TSP)** puede formularse como un problema
 
 4. **Variables binarias:** $x_{ij} \in \{0,1\}$
 
----
-
 ## ¿Cómo se resuelve con PuLP?
 
 - **PuLP** es una librería de Python para modelar y resolver problemas de programación lineal y entera.
 - Se definen las variables, la función objetivo y las restricciones usando la API de PuLP.
 - El solucionador (por ejemplo, CBC) encuentra el tour óptimo.
 
----
-
 ## Escenarios
 
 Para cumplir con los 3 escenarios, se pueden modificar:
+
 - El número de ciudades (instancias pequeñas, medianas, grandes).
 - Las distancias (por ejemplo, simular ciudades más cercanas o lejanas).
 - Restricciones adicionales (por ejemplo, ciudades obligatorias, ventanas de tiempo, etc.).
-
----
 
 ## Referencias
 
 - [Wikipedia: TSP Integer Programming Formulation](https://en.wikipedia.org/wiki/Travelling_salesman_problem#Integer_linear_programming_formulation)
 - [PuLP Documentation](https://coin-or.github.io/pulp/)
 - Miller, C. E., Tucker, A. W., & Zemlin, R. A. (1960). "Integer Programming Formulation of Traveling Salesman Problems". Journal of the ACM.
-
----
