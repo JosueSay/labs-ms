@@ -121,6 +121,10 @@ Este AG para TSP construye cada generación a partir de **sobrevivientes (S%)**,
 
 **Prioridad**: tiempo -> stall -> maxIter.
 
+## Flujo
+
+![Workflow Algoritmo Genético](https://github.com/JosueSay/labs-ms/blob/main/Proyectos/p1/part1/docs/workflow.md)
+
 ## Configuración
 
 ### Ciudades y distancias (simétricas, enteras)
@@ -157,7 +161,7 @@ Tours y costos **precalculados**:
 | P8     | A E F G H D C B |     24 |
 | P9     | A C D E F G H B |     20 |
 
-### Parámetros para el ejemplo (con nuevas opciones)
+### Parámetros para el ejemplo
 
 * **Tamaño y mezcla**
 
