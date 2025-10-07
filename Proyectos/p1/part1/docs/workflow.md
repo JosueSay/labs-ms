@@ -40,7 +40,13 @@ flowchart TD
         N -->|No| P[Hijo queda igual]
         O -->|70%| Q[Insertion #40;1 vez máx#41;]
         O -->|30%| R[Swap #40;1 vez máx#41;]
+        
         Q --> S[(childrenC: C hijos)]
+        OPT2[2-opt]
+        S --> OPT2
+        U --> OPT2
+        OPT2 --> V
+
         R --> S
         P --> S
     end
@@ -56,15 +62,48 @@ flowchart TD
     %% Recomposición y limpieza
     V[Recomponer: S + C + M]
     D --> V
-    S --> V
-    U --> V
     V --> W[Anticlones #40;deduplicar#41;]
     W --> X{¿Tamaño != N?}
     X -->|Sobran| Y[Recortar peores hasta N]
     X -->|Faltan| Z[Crear aleatorios y deduplicar]
     Y --> AA[Ordenar por costo]
     Z --> AA
-    AA --> AB[Nueva población N=10<br>#40;siguiente generación#41;]
+
+    %% Especies
+    SP_IMP -->|Sí| AB[Nueva población N=10<br>#40;siguiente generación#41;]
+    SP_IMP -->|No| SP0{¿gen % speciesPeriod == 0#63;}
+
+    SP0 -->|No| AB
+    SP0 -->|Sí| SP_CNT{¿#35;especies ≥ 2#63;}
+    SP_CNT -->|No| AB
+
+    SP_CNT -->|Sí| SP1[Formar especies<br>#40;clustering por Jaccard de aristas<br>con speciesThresh#41;]
+    SP1 --> SP2[Identificar PEOR especie<br>#40;peor “mejor miembro”#41;]
+    SP2 --> SP3[Calcular cullCount = max#40;1, #8970;speciesCullFrac #183; #124;especie#124;#8971;#41;]
+    SP3 --> SP4[Eliminar cullCount peores de esa especie]
+    SP4 --> SP5[Reponer con inmigrantes:<br>makeRandomTour + 2-opt]
+    SP5 --> SP6[Anticlones + Ordenar por costo]
+    SP6 --> AB
+
+
+    %% --- Catástrofe (si estancado) ---
+    AA --> CT_IMP{¿Hubo NUEVO mejor en esta gen#63;}
+    CT_IMP -->|Sí| CT_SKIP[Omitir catástrofe]
+    
+    CT_IMP -->|No| CT0{¿noImprove % catPeriod == 0 y catastropheFrac > 0#63;}
+
+    CT0 -->|No| CT_SKIP
+    CT0 -->|Sí| CT1[replaceK = #8970;catastropheFrac #183; N#8971;]
+    CT1 --> CT2[Tomar los replaceK peores de la población<br>#40;salvando élites#41;]
+    CT2 --> CT3[Generar inmigrantes:<br>double-bridge#40;best#41; + 2-opt]
+    CT3 --> CT4[Reemplazar, Anticlones y Ordenar]
+    CT4 --> CT_SKIP
+
+    CT_SKIP --> SP_IMP{¿Hubo NUEVO mejor en esta gen#63;}
+
+
+
+
 
     %% ------------------ OX (Order Crossover) ------------------
     subgraph L_ox [OX]
