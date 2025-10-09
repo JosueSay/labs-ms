@@ -123,7 +123,7 @@ Este AG para TSP construye cada generación a partir de **sobrevivientes (S%)**,
 
 ## Flujo
 
-![Workflow Algoritmo Genético](https://github.com/JosueSay/labs-ms/blob/main/Proyectos/p1/part1/docs/workflow.md)
+[Workflow Algoritmo Genético](https://github.com/JosueSay/labs-ms/blob/main/Proyectos/p1/part1/docs/workflow.md)
 
 ## Configuración
 
