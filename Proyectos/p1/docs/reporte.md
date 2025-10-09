@@ -1,6 +1,6 @@
-# Laboratorio 5
+# Proyecto 1
 
-Este laboratorio es sobre **campos de direcciones**, **isóclinas** y **diagramas de fase**, además de resolución analítica de EDOs y PVIs.
+Este proyecto tiene como objetivo diseñar e implementar un algoritmo genético para resolver un problema TSP y compararlo con una solución de programación lineal.
 
 ## Integrantes
 
