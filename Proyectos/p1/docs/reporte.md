@@ -10,7 +10,17 @@ Este laboratorio es sobre **campos de direcciones**, **isóclinas** y **diagrama
 
 ## Enlaces
 
-- [Repositorio](https://github.com/JosueSay/labs-ms/tree/main/Labs/lab5)
+- [Repositorio](https://github.com/JosueSay/labs-ms/tree/main/Proyectos/p1)
+
+## Índice
+
+- [Introduccion TSP Algoritmo Genético](#tsp-con-algoritmo-genético)
+  - [Explicación problemas resueltos](#contexto)
+  - [Explicación problema personalizado](#caso-personalizado-tsp-art)
+- [Explicación algoritmo genético](#algoritmo-genético)
+- [Formulación y resolución con programación lineal entera](#formulación-y-resolución-del-tsp-con-programación-entera)
+- [Reporte resultados - comparación GA y LP](#reporte-de-resultados)
+- [Referencias](#referencias)
 
 # TSP con Algoritmo Genético
 
@@ -137,7 +147,7 @@ Este AG para TSP construye cada generación a partir de **sobrevivientes (S%)**,
 
 ## Flujo
 
-![Workflow Algoritmo Genético](https://github.com/JosueSay/labs-ms/blob/main/Proyectos/p1/part1/docs/workflow.md)
+[Workflow Algoritmo Genético](https://github.com/JosueSay/labs-ms/blob/main/Proyectos/p1/part1/docs/workflow.md)
 
 ## Configuración
 
@@ -1147,7 +1157,55 @@ Estos valores fueron generados automáticamente y guardados en `Proyectos/p1/par
 - Los resultados del **modelo exacto (ILP)** sirven como **referencia óptima** para comparar con los resultados del **Algoritmo Genético (GA)** implementado en el inciso 1.  
 - La exportación de resultados en formato CSV permite integrar fácilmente las métricas de comparación entre métodos.
 
-## Referencias
+# Reporte de resultados
+
+Tablas comparativas de las solciones de cada escenario
+
+## Escenario 1 - cherry189
+
+**Informacion escenario:**
+
+- **Número de ciudades:** 189
+- **Tamaño población (GA):** 700
+- **Número de iteraciones (GA):** 999999 (max.)
+- **Número de variables:**
+
+![Imagen Resultados Cherry](../images/reporte/Cherry189.png)
+
+La solución fue encontrada en mucho menos tiempo en LP que en GA, indicando una eficiencia superior en LP, se obtuvo un porcentaje de error del 8.74% con respecto al resultado en GA, indicando superioridad del LP frente a este.
+
+## Escenario 2 - Eil101
+
+**Informacion escenario:**
+
+- **Número de ciudades:** 189
+- **Tamaño población (GA):** 700
+- **Número de iteraciones (GA):** 999999 (max.)
+- **Número de variables:**
+
+![Imagen Resultados Eil101](../images/reporte/eil101.png)
+
+El tiempo que llevó encontrar la solución fue menor en GA que LP, con solo 1200 segundos logró ser más que el doble de rápido que LP, sin embargo, el porcentaje de error es del 9.24% con respecto al resultado en GA a pesar de que LP tomó más tiempo para encontrar la solución.
+
+## Escenario 3 - Gr229
+
+**Informacion escenario:**
+
+- **Número de ciudades:** 189
+- **Tamaño población (GA):** 700
+- **Número de iteraciones (GA):** 999999 (max.)
+- **Número de variables:**
+
+![Imagen Resultados Eil101](../images/reporte/gr229.png)
+
+LP fue más rápido que GA y por mucho, sin embargo, el mejor resultado fue de GA. El porcentaje de error es mucho más grande en esta instancia alcanzando el 37.98% siendo ya una cifra no trivial a diferencia de los otros.
+
+## Conclusiones
+
+- LP tiende a ser mucho más rápido que GA (este último habiendo alcanzado hasta 8 horas en los escenarios), pero por otro lado también ha llevado a tener errores significativos, como se vio en el escenario gr229
+- Podemos decir que GA es un poco más robusto, sobre todo para distancias grandes que LP pero este es mucho más rápido.
+
+# Referencias
 
 - [Traveling Salesman Problem (TSP) using Genetic Algorithm – Medium](https://medium.com/aimonks/traveling-salesman-problem-tsp-using-genetic-algorithm-fea640713758)
 - [Artículo en ScienceDirect: solución al TSP con GA y otros enfoques](https://www.sciencedirect.com/science/article/pii/S2405896318328921)
