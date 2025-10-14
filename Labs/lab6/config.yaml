@@ -1,0 +1,19 @@
+seed: 12345
+
+
+sim1:
+  L: 10                 # float > 0 (coincidir con el rango 0..10 observado)
+  N_total: 200          # int >= 1 (coincidir con el total S+I+R≈200)
+  I0: 5                 # int, 1 <= I0 < N_total
+  vmax: 0.8             # float > 0
+  r: 0.6                # float > 0
+  beta: 0.35            # float >= 0
+  gamma: 0.08           # float >= 0
+  dt: 1.0               # float > 0 (paso de tiempo; la imagen muestra t≈223 pasos)
+  steps: 230            # int > 0 (número de pasos; suficiente para ver el pico de I)
+  fps: 20               # int > 0 (frames por segundo del GIF)
+  boundary: "wrap"
+  out_gif: "images/sim1/sim1.gif"
+  curves_png: "images/sim1/sim1_curvas.png"
+
+sim2:
