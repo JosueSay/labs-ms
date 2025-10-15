@@ -220,7 +220,7 @@ def main():
     color_S = "blue"
     color_I = "red"
     color_R = "green"
-    scatter_colors_map = {0: color_S, 1: color_I, 2: color_R}
+    scatter_colors_map = {0: color_R, 1: color_I, 2: color_S}
     line_colors_map = {"S": "green", "I": "red", "R": "blue"}
 
     frames = []
