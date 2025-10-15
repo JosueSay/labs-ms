@@ -190,9 +190,9 @@ def main():
     # Setup RNG
     rng = np.random.default_rng(seed)
     print("[INFO] Parámetros cargados:")
-    print(f"       seed={seed}, L={L}, N_total={N_total}, I0={I0}, vmax={vmax}, r={r}")
-    print(f"       beta={beta}, gamma={gamma}, dt={dt}, steps={steps}, fps={fps}, boundary={boundary}")
-    print(f"       out_gif='{out_gif}', curves_png='{curves_png}'")
+    print(f"\tseed={seed}, L={L}, N_total={N_total}, I0={I0}, vmax={vmax}, r={r}")
+    print(f"\tbeta={beta}, gamma={gamma}, dt={dt}, steps={steps}, fps={fps}, boundary={boundary}")
+    print(f"\tout_gif='{out_gif}', curves_png='{curves_png}'")
 
     # Initialize particle states and positions
     N = N_total
