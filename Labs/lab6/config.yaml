@@ -1,32 +1,29 @@
-seed: 12345
-
+seed: 13345
 sim1:
-  L: 10                 # float > 0 (coincidir con el rango 0..10 observado)
-  N_total: 200          # int >= 1 (coincidir con el total S+I+R≈200)
-  I0: 5                 # int, 1 <= I0 < N_total
-  vmax: 0.8             # float > 0
-  r: 0.6                # float > 0
-  beta: 0.35            # float >= 0
-  gamma: 0.08           # float >= 0
-  dt: 1.0               # float > 0 (paso de tiempo; la imagen muestra t≈223 pasos)
-  steps: 230            # int > 0 (número de pasos; suficiente para ver el pico de I)
-  fps: 20               # int > 0 (frames por segundo del GIF)
-  boundary: "reflect"
-  out_gif: "images/sim1/sim1.gif"
-  curves_png: "images/sim1/sim1_curvas.png"
-
+  I0: 5
+  L: 10
+  N_total: 200
+  beta: 0.35
+  boundary: reflect
+  curves_png: images/sim1/sim1_curvas.png
+  dt: 1.0
+  fps: 20
+  gamma: 0.08
+  out_gif: images/sim1/sim1.gif
+  r: 0.6
+  steps: 230
+  vmax: 0.8
 sim2:
-sim2:
-  M: 60           # Altura del grid
-  N: 60           # Anchura del grid
-  I0: 5           # Número inicial de infectados
-  T: 500          # Tiempo total de simulación
-  r: 1            # Radio de vecindad (Moore)
-  beta: 0.3       # Tasa de infección
-  gamma: 0.05     # Tasa de recuperación
-  SEED: 42        # Semilla aleatoria
-  save_gif: true  # Guardar animación GIF
-  fps: 12         # Frames por segundo del GIF
-  interval: 60    # Intervalo entre cuadros en ms
-  out_gif: "images/sim2/sim2.gif"
-  curves_png: "images/sim2/sim2_curvas.png"
+  I0: 5
+  M: 60
+  N: 60
+  SEED: 42
+  T: 500
+  beta: 0.3
+  curves_png: images/sim2/sim2_curvas.png
+  fps: 12
+  gamma: 0.05
+  interval: 60
+  out_gif: images/sim2/sim2.gif
+  r: 1
+  save_gif: true
