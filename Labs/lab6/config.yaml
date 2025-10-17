@@ -16,3 +16,17 @@ sim1:
   curves_png: "images/sim1/sim1_curvas.png"
 
 sim2:
+sim2:
+  M: 60           # Altura del grid
+  N: 60           # Anchura del grid
+  I0: 5           # Número inicial de infectados
+  T: 500          # Tiempo total de simulación
+  r: 1            # Radio de vecindad (Moore)
+  beta: 0.3       # Tasa de infección
+  gamma: 0.05     # Tasa de recuperación
+  SEED: 42        # Semilla aleatoria
+  save_gif: true  # Guardar animación GIF
+  fps: 12         # Frames por segundo del GIF
+  interval: 60    # Intervalo entre cuadros en ms
+  out_gif: "images/sim2/sim2.gif"
+  curves_png: "images/sim2/sim2_curvas.png"
