@@ -28,6 +28,8 @@ Generar una animación .gif o un video en formato .mp4 en el que se visualice la
 
 
 ## Cómo llegamos a la solución
+<img width="952" height="507" alt="image" src="https://github.com/user-attachments/assets/5b15a4d0-6e0b-42b0-9aaf-6f645a67592d" />
+
 
 Se trabajó siguiendo dos artefactos del proyecto: el prompt de especificación (`prompt.md`) y la implementación final (`sim2.py`). A continuación se resume el proceso y las decisiones principales.
 
@@ -70,4 +72,5 @@ Se trabajó siguiendo dos artefactos del proyecto: el prompt de especificación 
 - Cambiar parámetros (M, N, I0, T, r, β, γ, SEED) al inicio del archivo `sim2.py` para experimentar con escenarios.
 - Para obtener la misma secuencia exacta (por ejemplo, para guardar el snapshot pedido en el prompt), fijar SEED y repetir la ejecución.
 - Si la animación es demasiado pesada, reducir T o guardar solo cada k-ésimo frame.
+
 
