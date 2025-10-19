@@ -12,7 +12,7 @@ def ejecutar_simulacion(script_simulacion, config_path, semilla, repeticion):
     print(f"  Repeticion {repeticion} con semilla {semilla}...")
     
     try:
-        #jejc sim 1  o 2
+        #ejecucion simulaciones
         result = subprocess.run(
             ['python', script_simulacion, '--config', config_path],
             capture_output=True, text=True

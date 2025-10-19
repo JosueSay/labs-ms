@@ -105,12 +105,17 @@ def run_simulation(M, N, I0, T, r, beta, gamma):
     I_hist = [int((grid == INF).sum())]
     R_hist = [int((grid == REC).sum())]
 
+    print(f"[STEP 0] | S={S_hist[0]} I={I_hist[0]} R={R_hist[0]}")
+
     for t in range(1, T + 1):
         grid = step(grid, beta, gamma, r=r)
         grids.append(grid.copy())
         S_hist.append(int((grid == SUS).sum()))
         I_hist.append(int((grid == INF).sum()))
         R_hist.append(int((grid == REC).sum()))
+
+        print(f"[STEP {t}] | S={S_hist[-1]} I={I_hist[-1]} R={R_hist[-1]}")
+        
         if I_hist[-1] == 0:
             for _ in range(t + 1, T + 1):
                 grids.append(grid.copy())
@@ -118,6 +123,8 @@ def run_simulation(M, N, I0, T, r, beta, gamma):
                 I_hist.append(0)
                 R_hist.append(R_hist[-1])
             break
+
+    print(f"[RESUMEN] Último paso: S={S_hist[-1]} I={I_hist[-1]} R={R_hist[-1]}")
 
     return grids, np.array(S_hist), np.array(I_hist), np.array(R_hist)
 
