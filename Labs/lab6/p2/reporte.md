@@ -24,21 +24,22 @@ Generar una animación .gif o un video en formato .mp4 en el que se visualice la
 - $\beta =$ tasa de infección
 - $\gamma =$ tasa de recuperación
 
-
-
-
 ## Cómo llegamos a la solución
-<img width="952" height="507" alt="image" src="https://github.com/user-attachments/assets/5b15a4d0-6e0b-42b0-9aaf-6f645a67592d" />
 
+![Curvas de simulación 2](../images/sim2/sim2_curvas.png)
+
+- [Enlace al gif generado](https://github.com/JosueSay/labs-ms/blob/main/Labs/lab6/images/sim2/sim2.gif)
 
 Se trabajó siguiendo dos artefactos del proyecto: el prompt de especificación (`prompt.md`) y la implementación final (`sim2.py`). A continuación se resume el proceso y las decisiones principales.
 
 1. Lectura del prompt (prompt.md)
+
 - Se extrajeron los requisitos exactos: dimensiones del grid (M × N), I0, T, radio de vecindad r, tasas β y γ, formato de salida (animación .gif/.mp4) y la visualización simultánea del grid y las curvas S(t), I(t), R(t).
 - Se definió el formato de los estados: 0=S (azul), 1=I (rojo), 2=R (verde) y el título informativo por frame:  
   t = {tiempo} | S = {susceptibles} | I = {infectados} | R = {recuperados}.
 
 2. Diseño del modelo (decisiones tomadas)
+
 - Modelo: autómata celular discreto en tiempo y espacio.
 - Vecindad: Von Neumann con radio r = 1 (cuatro vecinos) — implementada sin borde periódico (bordes con menos vecinos).
 - Reglas:
@@ -49,6 +50,7 @@ Se trabajó siguiendo dos artefactos del proyecto: el prompt de especificación 
 - Reproducibilidad: semilla fija (SEED) para generar trayectorias replicables.
 
 3. Implementación en sim2.py
+
 - Funciones principales:
   - init_grid(M,N,I0): inicializa el grid con I0 infectados aleatorios.
   - von_neumann_shifts(grid): cuenta vecinos infectados en Von Neumann r=1.
@@ -64,13 +66,13 @@ Se trabajó siguiendo dos artefactos del proyecto: el prompt de especificación 
   - Código incluye mecanismo para guardar un PNG (snapshot) del `fig` cuando se alcanza una condición deseada en t (se puede activar según prompt).
 
 4. Verificación y ajustes
+
 - Se verificaron historiales S(t), I(t), R(t) en cada paso y la conservación del número total de celdas (S+I+R = M·N).
 - Parámetros de visualización (interval, fps) ajustados para obtener una animación fluida y legible para T grande.
 - Se eligió no usar fronteras periódicas porque la dinámica en bordes es más representativa para muchos escenarios epidemiológicos en autómatas celulares.
 
 5. Notas prácticas
+
 - Cambiar parámetros (M, N, I0, T, r, β, γ, SEED) al inicio del archivo `sim2.py` para experimentar con escenarios.
 - Para obtener la misma secuencia exacta (por ejemplo, para guardar el snapshot pedido en el prompt), fijar SEED y repetir la ejecución.
 - Si la animación es demasiado pesada, reducir T o guardar solo cada k-ésimo frame.
-
-
