@@ -1,3 +1,17 @@
+# Laboratorio 7
+
+En este laboratorio investigaremos cómo construir un generador de una variable uniforme $Y \sim Unif(0,1)$ y evaluaremos su desempeño mediante distintos métodos y pruebas estadísticas.
+
+## Integrantes
+
+- Abby Donis
+- Cindy Gualim
+- Josué Say
+
+## Enlaces
+
+- [Repositorio](https://github.com/JosueSay/labs-ms/tree/main/Labs/lab7)
+
 # Problema 1 - Generador Pseudoaleatorio Uniforme
 
 Implementar un generador de números pseudo-aleatorios de tipo LCG (*linear congruential generator*), para generar:

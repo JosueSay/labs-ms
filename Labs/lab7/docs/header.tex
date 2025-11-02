@@ -1,0 +1,17 @@
+\usepackage{amsmath,amssymb}
+\usepackage{fontspec}
+\setmainfont{FiraCode Nerd Font}
+\setmonofont{FiraCode Nerd Font Mono}
+\usepackage{microtype}
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,keepaspectratio} % escala imágenes al ancho del texto
+\usepackage{float}
+\makeatletter
+\def\fps@figure{H} % fija imágenes donde aparecen
+\makeatother
+\usepackage[section]{placeins} % barreras por sección
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\usepackage{setspace}
+\setstretch{1.5}
+
+% pandoc --from=markdown-implicit_figures   reporte.md -o reporte.pdf   --pdf-engine=xelatex   -V geometry:top=0.67in -V geometry:bottom=0.67in -V geometry:left=0.85in -V geometry:right=0.85in   -H header.tex   --resource-path=.:images:../images
