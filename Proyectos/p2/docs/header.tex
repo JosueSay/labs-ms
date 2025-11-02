@@ -1,0 +1,65 @@
+% =========================
+% Paquetes básicos
+% =========================
+\usepackage{amsmath,amssymb}      % símbolos y entornos matemáticos
+\usepackage{fontspec}             % fuentes OpenType/TrueType (XeLaTeX/LuaLaTeX)
+\usepackage{etoolbox}             % centrar automáticamente todas las figuras creadas por pandoc
+
+% =========================
+% Fuentes del documento
+% =========================
+\setmainfont{FiraCode Nerd Font}       % fuente principal (texto)
+\setmonofont{FiraCode Nerd Font Mono}  % fuente monoespaciada (código)
+
+% =========================
+% Microtipografía
+% =========================
+\usepackage{microtype}            % mejora kerning/expansión para mejor legibilidad
+
+% =========================
+% Gestión de imágenes
+% =========================
+\usepackage{graphicx}             % \includegraphics
+% escala global: cada imagen ocupa 80% del ancho del texto, respetando proporción
+\setkeys{Gin}{width=0.80\linewidth,keepaspectratio}
+
+% =========================
+% Control de flotantes (figuras/tablas)
+% =========================
+\usepackage{float}                % opción [H] para fijar posición exacta
+\makeatletter
+\def\fps@figure{H}                % por defecto, colocar figuras en la posición indicada
+\makeatother
+\usepackage[section]{placeins}    % \FloatBarrier automático al final de cada sección
+
+% =========================
+% Hipervínculos
+% =========================
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+% =========================
+% Interlineado
+% =========================
+\usepackage{setspace}
+\setstretch{1.5}                  % interlineado 1.5
+
+% =========================
+% Tablas compactas (estilo y tamaño)
+% =========================
+% macro de estilo: tamaño, espacio entre columnas y entre filas
+\newcommand{\TableTight}{%
+  \footnotesize                % tamaño del texto de la tabla
+  \setlength{\tabcolsep}{5pt}  % separación entre columnas
+  \renewcommand{\arraystretch}{1.0}% altura de filas (1=normal)
+}
+
+% aplicar estilo automáticamente a tablas
+\AtBeginEnvironment{table}{\TableTight}
+\AtBeginEnvironment{longtable}{\TableTight}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\AtBeginEnvironment{figure}{\centering}
+
+% =========================
+% Comando de Pandoc (referencia de compilación)
+% =========================
+% pandoc --from=markdown+implicit_figures contexto.md -o contexto.pdf --pdf-engine=xelatex -V geometry:top=0.67in -V geometry:bottom=0.67in -V geometry:left=0.85in -V geometry:right=0.85in -H header.tex --resource-path=.:images:../images
