@@ -9,6 +9,6 @@ Investigar cómo implementar en Python la batería de pruebas NIST SP 800-22, y 
 
 Elabore una tabla en donde se vea el desempeño de los generadores en cada uno de los tests anteriores, junto con el *p-value* obtenido y concluya cuál de los dos métodos se desempeña mejor.
 
+## Resolución
 
-### Resolución
 Se hizo uso de los programas realizados para los incisos 1 y 2 del laboratorio para obtener los datos con los que se trabajaría, que luego se probarian con las preubas NIST, las cuales son estándar internacional. Evalua multiples propiedades, detecta debilidade sutiles y es bastente util en aplicaicones criticas.
