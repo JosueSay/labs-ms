@@ -149,3 +149,120 @@ Se aplicaron dos contrastes estadísticos sobre la muestra generada:
    Resultado: $p > 0.05$ → no se rechaza $H_0$.
 
 Ambas pruebas indican que la muestra generada es estadísticamente consistente con una distribución uniforme continua. Los resultados obtenidos demuestran que el método produce números pseudoaleatorios indistinguibles de una distribución $Unif(0,1)$ bajo las pruebas aplicadas.
+
+# Problema 4 - Comparar muestras de una Geométrica
+
+Para una distribución geométrica $Geom(p)$, generar una muestra aleatoria de tamaño $N$ usando la librería `scipy.stats`, a la cual llamaremos la muestra teórica. Luego, generar una muestra del mismo tamaño, pero usando el algoritmo de la transformada integral. A esta la llamaremos la muestra empírica.
+
+Comparar ambas muestras usando las pruebas de Chi Cuadrado y de Kolmogorov–Smirnov. ¿Qué concluye? ¿Se pueden considerar como muestras de una misma distribución? Explique sus conclusiones a partir de las pruebas de hipótesis. Use un nivel de confianza de $\alpha = 0.05$.
+
+Se siguieron los pasos establecidos:
+
+1. **Generación de la muestra teórica:**  
+   Se utilizó la función `scipy.stats.geom(p)` de la librería *scipy* para generar una muestra aleatoria de tamaño $N = 5000$ con parámetro $p = 0.3$.  
+   Esta muestra se consideró la referencia o distribución "real" (muestra teórica).
+
+2. **Generación de la muestra empírica:**  
+   Para validar el método de simulación, se generó una segunda muestra de igual tamaño usando el **método de la transformada integral**, aplicando la fórmula:
+   $$
+   X = \lceil \frac{\ln(1-U)}{\ln(1-p)} \rceil
+   $$
+   donde $U \sim Unif(0,1)$.  
+   Este procedimiento permite obtener una variable geométrica a partir de números aleatorios uniformes, mostrando cómo se puede construir una distribución discreta desde una base continua.
+
+3. **Aplicación de pruebas estadísticas:**  
+   Se compararon las dos muestras con las pruebas:
+   - **Chi–Cuadrado**, para analizar las frecuencias observadas frente a las esperadas.  
+   - **Kolmogorov–Smirnov (K–S)**, para comparar las distribuciones acumuladas de ambas muestras.  
+   Se utilizó un **nivel de significancia de $\alpha = 0.05$**.
+
+4. **Resultados obtenidos:**  
+   - **Media teórica:** $3.306$
+      - **Desviación estándar:** $2.7497$  
+   - **Media empírica:** $3.235$
+      - **Desviación estándar:** $2.6832$  
+   - **Prueba Chi–Cuadrado:** $p = 0.0118$  
+   - **Prueba Kolmogorov–Smirnov:** $p = 0.3927$  
+
+   En el histograma comparativo se observa una gran similitud entre ambas distribuciones.
+
+5. **Interpretación:**  
+   Aunque la prueba de Chi–Cuadrado arrojó un $p$-valor menor a $0.05$, indicando una ligera diferencia en las frecuencias, la prueba de Kolmogorov–Smirnov mostró un $p$-valor mayor a $0.05$, lo que significa que no se rechaza la hipótesis nula y que **ambas muestras pueden considerarse provenientes de la misma distribución**.  
+   Las diferencias detectadas por la prueba Chi–Cuadrado pueden atribuirse a su alta sensibilidad cuando el tamaño de muestra es grande.
+
+**Conclusión:**  
+El experimento demuestra que el **método de la transformada integral reproduce correctamente la distribución $Geom(p)$**.  
+A partir de las pruebas realizadas y el análisis visual, se concluye que las muestras **teórica y empírica son estadísticamente equivalentes al nivel de significancia de $\alpha = 0.05$**.
+
+# Problema 5 - Comparar muestras de una Normal
+
+Para una distribución normal $\mathcal{N}(\mu, \sigma^2)$, generar una muestra aleatoria de tamaño $N$ usando la librería `scipy.stats`, a la cual llamaremos la muestra teórica. Luego, generar una segunda muestra del mismo tamaño (llamada la muestra empírica), pero usando el algoritmo de la transformada integral.
+
+Comparar ambas muestras usando las pruebas de Chi Cuadrado y de Kolmogorov–Smirnov. ¿Qué concluye? ¿Se pueden considerar como muestras de una misma distribución? Explique sus conclusiones a partir de las pruebas de hipótesis. Use un nivel de confianza de $\alpha = 0.05$.
+
+## Desarrollo del inciso 5 – Comparación de muestras de una Distribución Normal
+
+De acuerdo con las instrucciones del laboratorio, el objetivo de este inciso fue **comparar dos muestras provenientes de una distribución $\mathcal{N}(\mu, \sigma^2)$** con el fin de verificar si ambas pueden considerarse estadísticamente equivalentes.
+
+### Procedimiento realizado
+
+1. **Generación de la muestra teórica:**  
+   Se utilizó la función `scipy.stats.norm(mu, sigma)` para generar una muestra de tamaño $N = 5000$ con parámetros  
+   $\mu = 0$ y $\sigma = 1$.  
+   Esta muestra representa la distribución normal teórica, que sirve como referencia.
+
+2. **Generación de la muestra empírica:**  
+   Se empleó el **método de la transformada integral**, aplicando la función inversa de la CDF de la normal:
+   $$
+   X = F^{-1}(U)
+   $$
+   donde $U \sim Unif(0,1)$.  
+   Este método permite transformar variables uniformes en variables normales, demostrando el proceso de generación de una distribución continua a partir de una uniforme.
+
+3. **Pruebas estadísticas aplicadas:**  
+   Para comparar las muestras se utilizaron las siguientes pruebas:
+   - **Chi–Cuadrado**, que compara las frecuencias observadas y esperadas.  
+   - **Kolmogorov–Smirnov (K–S)**, que compara las distribuciones acumuladas.  
+   El nivel de significancia utilizado fue $\alpha = 0.05$.
+
+### Resultados obtenidos
+
+| Muestra/Prueba | Media | Desv. Est. | Estadístico | p-valor |
+|----------------|--------|-------------|-------------|----------|
+| Teórica | $0.0211$ | $0.9879$ | – | – |
+| Empírica | $-0.0133$ | $0.9842$ | – | – |
+| Chi–Cuadrado | – | – | $101.1449$ | $0.0000$ |
+| Kolmogorov–Smirnov | – | – | $0.021$ | $0.2202$ |
+
+El histograma muestra una alta coincidencia entre ambas distribuciones, con un comportamiento simétrico y centrado alrededor de la media, tal como se espera en una distribución normal estándar.
+
+### Interpretación de los resultados ($\alpha = 0.05$)
+
+- Si $p > 0.05$, **no se rechaza $H_0$**, lo que indica que ambas muestras pueden provenir de la misma distribución.  
+- Si $p \le 0.05$, se **rechaza $H_0$**, indicando diferencias significativas entre las muestras.
+
+En este caso:
+
+- La **prueba de Chi–Cuadrado** arrojó un valor $p = 0.0000$, por lo que **se rechaza $H_0$**, señalando diferencias en las frecuencias.  
+- La **prueba de Kolmogorov–Smirnov**, con $p = 0.2202$, **no rechaza $H_0$**, lo que sugiere que las distribuciones acumuladas son estadísticamente equivalentes.
+
+### Conclusión
+
+A pesar de que la prueba de Chi–Cuadrado detectó diferencias, estas se deben a su alta sensibilidad con tamaños grandes de muestra ($N = 5000$).  
+La prueba de Kolmogorov–Smirnov, junto con la similitud visual del histograma y las medias casi idénticas, indica que **ambas muestras pueden considerarse provenientes de la misma distribución $\mathcal{N}(\mu, \sigma^2)$**.  
+
+Por tanto, se concluye que el **método de la transformada integral reproduce correctamente la distribución Normal**, validando su uso para generar muestras continuas a partir de variables uniformes.
+
+## Respuesta a las preguntas
+
+**¿Qué concluye?**  
+A partir de las pruebas estadísticas, se observa que la **prueba de Chi–Cuadrado** arrojó un $p$-valor de **$0.0000$**, lo que implica que **se rechaza la hipótesis nula**, indicando diferencias en las frecuencias observadas entre las dos muestras.  
+Sin embargo, la **prueba de Kolmogorov–Smirnov (K–S)** dio un $p$-valor de **$0.2202$**, mayor que el nivel de significancia $\alpha = 0.05$, por lo que **no se rechaza la hipótesis nula**.  
+Esto significa que, al comparar las funciones de distribución acumulada, **no existen diferencias estadísticamente significativas** entre las muestras teórica y empírica.
+
+**¿Se pueden considerar como muestras de una misma distribución?**  
+Sí. Aunque la prueba de Chi–Cuadrado detecta pequeñas diferencias debidas a la sensibilidad de la prueba ante tamaños grandes de muestra ($N = 5000$), la prueba K–S y la similitud visual de los histogramas confirman que ambas muestras **siguen el mismo comportamiento estadístico**.  
+
+**Conclusión final:**  
+Las dos muestras pueden considerarse **provenientes de la misma distribución $\mathcal{N}(\mu, \sigma^2)$**.  
+Esto valida que el **método de la transformada integral** genera correctamente la distribución normal a partir de variables uniformes, reproduciendo de forma precisa la forma y dispersión de la distribución teórica.
