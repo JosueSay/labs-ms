@@ -1,7 +1,6 @@
 import numpy as np
 
 def getRng(seed=None):
-    # crea un generador numpy con semilla fija o aleatoria
     if seed is None:
         seed = np.random.SeedSequence().entropy
     return np.random.default_rng(int(seed))
@@ -19,10 +18,11 @@ def poissonArrivals(rng, rate, sim_time):
 
     arrivals = []
     current_time = 0.0
-    while True:
-        # intervalo entre llegadas ~ exponencial(1/λ)
+
+    # mientras el tiempo actual sea menor que el límite de simulación
+    while current_time < sim_time:
         current_time += rng.exponential(1.0 / rate)
-        if current_time > sim_time:
-            break
-        arrivals.append(current_time)
+        if current_time < sim_time:
+            arrivals.append(current_time)
+
     return arrivals

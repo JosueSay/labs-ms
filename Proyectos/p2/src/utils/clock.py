@@ -2,16 +2,11 @@ import time
 
 class SimClock:
     def __init__(self, start_time=0.0, wall_clock_speed=1.0, record_interval_seconds=10):
-        # tiempo simulado actual
-        self.sim_time = start_time
-        # velocidad respecto al tiempo real (1.0 = tiempo real)
-        self.wall_clock_speed = wall_clock_speed
-        # intervalo entre registros de métricas
-        self.record_interval = record_interval_seconds
-        # último tiempo registrado (para decidir cuándo guardar)
-        self.last_record_time = start_time
-        # referencia del reloj real (solo para modo realtime)
-        self.real_start = time.time()
+        self.sim_time = start_time                          # tiempo simulación actual
+        self.wall_clock_speed = wall_clock_speed            # velocidad respecto al tiempo (1 = tiempo real)
+        self.record_interval = record_interval_seconds      # intervalo entre registros de métricas
+        self.last_record_time = start_time                  # ultimo tiempo registrado (para guardar)
+        self.real_start = time.time()                       # ref reloj en tiempo real para modo realtime
 
     def advance(self, delta):
         # avanza el tiempo simulado en delta (horas o minutos según modelo)
