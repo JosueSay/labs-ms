@@ -25,12 +25,12 @@ def getLogger(name, log_path, level=logging.INFO):
     return logger
 
 def logStartRun(logger, cfg):
-    project = cfg.get("project", {})
-    model = cfg.get("model", {})
-    simulation = cfg.get("simulation", {})
+    project = cfg.get("project")
+    model = cfg.get("model")
+    simulation = cfg.get("simulation",)
 
     logger.info("Iniciando corrida:")
-    logger.info(f"\tRun ID: {cfg.get('run_id', '')}")
+    logger.info(f"\tRun ID: {cfg.get('run_id')}")
     logger.info("\tProyecto:")
     logger.info(f"\t\tSeed: {project.get('seed')}")
     logger.info("\tSimulación:")
@@ -39,5 +39,5 @@ def logStartRun(logger, cfg):
     logger.info(f"\t\tLambda: {model.get('lambda')}")
     logger.info(f"\t\tMu: {model.get('mu')}")
     logger.info("\tDirectorios:")
-    logger.info(f"\t\tDatos: {cfg.get('run_data_dir', '')}")
-    logger.info(f"\t\tResultados: {cfg.get('run_results_dir', '')}")
+    logger.info(f"\t\tDatos: {cfg.get('run_data_dir')}")
+    logger.info(f"\t\tResultados: {cfg.get('run_results_dir')}")

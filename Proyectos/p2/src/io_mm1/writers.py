@@ -5,7 +5,7 @@ from utils.fs import ensureDir
 
 def saveEffectiveConfig(cfg):
     # guarda la config efectiva en data/runs_*/config_effective.yaml
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     run_data_dir = cfg["run_data_dir"]
     ensureDir(run_data_dir)
@@ -31,7 +31,7 @@ def writeCsv(rows, out_path, columns=None):
 
 def saveRawEvents(cfg, raw_events):
     # guarda eventos crudos
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     out_path = os.path.join(cfg["run_data_dir"], "raw_events.csv")
     cols = ["timestamp_sim", "event_type", "customer_id", "queue_length_after", "server_state"]
@@ -39,7 +39,7 @@ def saveRawEvents(cfg, raw_events):
 
 def saveQueueTimes(cfg, queue_times):
     # guarda tiempos por cliente
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     out_path = os.path.join(cfg["run_data_dir"], "queue_times.csv")
     cols = ["customer_id", "t_arrival", "t_start_service", "t_end_service", "wait_time", "service_time", "system_time"]
@@ -47,7 +47,7 @@ def saveQueueTimes(cfg, queue_times):
 
 def saveQueueLengthSeries(cfg, queue_length_series):
     # guarda serie Lq(t)
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     out_path = os.path.join(cfg["run_data_dir"], "queue_length_series.csv")
     cols = ["timestamp_sim", "Lq"]
@@ -55,7 +55,7 @@ def saveQueueLengthSeries(cfg, queue_length_series):
 
 def saveServerUtilizationSeries(cfg, server_utilization_series):
     # guarda serie rho(t)
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     out_path = os.path.join(cfg["run_data_dir"], "server_utilization.csv")
     cols = ["timestamp_sim", "rho_instant"]
@@ -63,7 +63,7 @@ def saveServerUtilizationSeries(cfg, server_utilization_series):
 
 def saveSummaryMetrics(cfg, summary_metrics):
     # guarda métricas agregadas en csv (append-friendly)
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     out_path = os.path.join(cfg["run_data_dir"], "summary_metrics.csv")
     # si existe, hacemos append respetando orden de columnas del archivo
@@ -88,14 +88,14 @@ def saveSummaryMetrics(cfg, summary_metrics):
 
 def saveReportResumen(cfg, summary_metrics, extra_lines=None):
     # genera un md sencillo con las métricas principales
-    if not cfg.get("outputs", True):
+    if not cfg.get("outputs"):
         return None
     results_dir = cfg["run_results_dir"]
     ensureDir(results_dir)
     out_path = os.path.join(results_dir, "report_resumen.md")
 
     lines = []
-    lines.append(f"# Resumen de Simulación — {cfg.get('run_id', '')}")
+    lines.append(f"# Resumen de Simulación — {cfg.get('run_id')}")
     lines.append("")
 
     lines.append("## Parámetros")
@@ -123,8 +123,8 @@ def saveReportResumen(cfg, summary_metrics, extra_lines=None):
     lines.append("")
     lines.append(f"- Clientes procesados: **{summary_metrics.get('n_customers')}**")
     lines.append(f"- Tiempo de simulación (h): **{summary_metrics.get('sim_time_hours')}**")
-    lines.append(f"- Carpeta de datos: `{cfg.get('run_data_dir', '')}`")
-    lines.append(f"- Carpeta de resultados: `{cfg.get('run_results_dir', '')}`")
+    lines.append(f"- Carpeta de datos: `{cfg.get('run_data_dir')}`")
+    lines.append(f"- Carpeta de resultados: `{cfg.get('run_results_dir')}`")
     lines.append("")
 
 
