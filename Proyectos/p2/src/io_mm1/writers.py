@@ -94,39 +94,56 @@ def saveReportResumen(cfg, summary_metrics, extra_lines=None):
     ensureDir(results_dir)
     out_path = os.path.join(results_dir, "report_resumen.md")
 
+    # helpers cortos para formatear
+    def fmt(x, nd=6):
+        return "None" if x is None else (f"{x:.{nd}f}" if isinstance(x, (int, float)) else str(x))
+
     lines = []
     lines.append(f"# Resumen de Simulación — {cfg.get('run_id')}")
     lines.append("")
 
+    # parámetros
     lines.append("## Parámetros")
     lines.append("")
-    lines.append(f"- $\\lambda$ (Lambda): **{summary_metrics.get('lambda')}**")
-    lines.append(f"- $\\mu$ (Mu): **{summary_metrics.get('mu')}**")
+    lines.append(f"- $\\lambda$ (Lambda, config): **{fmt(summary_metrics.get('lambda_cfg'), 6)}**")
+    lines.append(f"- $\\lambda_\\text{{obs}}$ (Lambda observado): **{fmt(summary_metrics.get('lambda_obs'), 6)}**")
+    lines.append(f"- $\\mu$ (Mu): **{fmt(summary_metrics.get('mu'), 6)}**")
+    if "replications" in summary_metrics:
+        lines.append(f"- Réplicas configuradas: **{summary_metrics.get('replications')}**")
     lines.append("")
 
+    # teoría vs simulación
     lines.append("## Teoría vs Simulación")
     lines.append("")
-    lines.append(f"- $\\rho_{{\\text{{teoría}}}}$: **{summary_metrics.get('rho_theory')}** | $\\rho_{{\\text{{sim}}}}$: **{summary_metrics.get('rho_sim')}**")
-    lines.append(f"- $L_{{\\text{{teoría}}}}$: **{summary_metrics.get('L_theory')}** | $L_{{\\text{{sim}}}}$: **{summary_metrics.get('L_sim')}**")
-    lines.append(f"- $L_q^{{\\text{{teoría}}}}$: **{summary_metrics.get('Lq_theory')}** | $L_q^{{\\text{{sim}}}}$: **{summary_metrics.get('Lq_sim')}**")
-    lines.append(f"- $W_{{\\text{{teoría}}}}$: **{summary_metrics.get('W_theory')}** | $W_{{\\text{{sim}}}}$: **{summary_metrics.get('W_sim')}**")
-    lines.append(f"- $W_q^{{\\text{{teoría}}}}$: **{summary_metrics.get('Wq_theory')}** | $W_q^{{\\text{{sim}}}}$: **{summary_metrics.get('Wq_sim')}**")
+    lines.append(f"- $\\rho_{{\\text{{teoría}}}}$: **{fmt(summary_metrics.get('rho_theory'), 6)}** | "
+                 f"$\\rho_{{\\text{{sim}}}}$: **{fmt(summary_metrics.get('rho_sim'), 6)}**")
+    lines.append(f"- $L_{{\\text{{teoría}}}}$: **{fmt(summary_metrics.get('L_theory'), 6)}** | "
+                 f"$L_{{\\text{{sim}}}}$: **{fmt(summary_metrics.get('L_sim'), 6)}**")
+    lines.append(f"- $L_q^{{\\text{{teoría}}}}$: **{fmt(summary_metrics.get('Lq_theory'), 6)}** | "
+                 f"$L_q^{{\\text{{sim}}}}$: **{fmt(summary_metrics.get('Lq_sim'), 6)}**")
+    lines.append(f"- $W_{{\\text{{teoría}}}}$: **{fmt(summary_metrics.get('W_theory'), 6)}** | "
+                 f"$W_{{\\text{{sim}}}}$: **{fmt(summary_metrics.get('W_sim'), 6)}**")
+    lines.append(f"- $W_q^{{\\text{{teoría}}}}$: **{fmt(summary_metrics.get('Wq_theory'), 6)}** | "
+                 f"$W_q^{{\\text{{sim}}}}$: **{fmt(summary_metrics.get('Wq_sim'), 6)}**")
     lines.append("")
 
-    lines.append("## Ley de Little (Chequeo)")
+    # ley de little usando λ observado (lo que realmente calculamos)
+    lines.append("## Ley de Little (Chequeo con $\\lambda_\\text{obs}$)")
     lines.append("")
-    lines.append(f"- $L \\approx \\lambda \\cdot W$: **{summary_metrics.get('little_L_lambdaW_ok')}** (Error relativo: {summary_metrics.get('little_rel_error_L')})")
-    lines.append(f"- $L_q \\approx \\lambda \\cdot W_q$: **{summary_metrics.get('little_Lq_lambdaWq_ok')}** (Error relativo: {summary_metrics.get('little_rel_error_Lq')})")
+    lines.append(f"- Estimación $L / \\lambda_\\text{{obs}}$: **{fmt(summary_metrics.get('little_L_est'), 6)}** "
+                 f"(Error relativo vs $W$: {fmt(summary_metrics.get('little_rel_error_L'), 6)})")
+    lines.append(f"- Estimación $L_q / \\lambda_\\text{{obs}}$: **{fmt(summary_metrics.get('little_Lq_est'), 6)}** "
+                 f"(Error relativo vs $W_q$: {fmt(summary_metrics.get('little_rel_error_Lq'), 6)})")
     lines.append("")
 
+    # info de corrida
     lines.append("## Información de Corrida")
     lines.append("")
     lines.append(f"- Clientes procesados: **{summary_metrics.get('n_customers')}**")
-    lines.append(f"- Tiempo de simulación (h): **{summary_metrics.get('sim_time_hours')}**")
+    lines.append(f"- Tiempo de simulación (h): **{fmt(summary_metrics.get('sim_time_hours'), 6)}**")
     lines.append(f"- Carpeta de datos: `{cfg.get('run_data_dir')}`")
     lines.append(f"- Carpeta de resultados: `{cfg.get('run_results_dir')}`")
     lines.append("")
-
 
     if extra_lines:
         lines.append("")
