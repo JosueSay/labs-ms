@@ -20,7 +20,7 @@ model_params:
   service_time_if_busy: 0.0
 
 simulation:
-  mode: "batch"
+  mode: "realtime"
   sim_time_hours: 24.0
   warmup_minutes: 60
   record_interval_seconds: 1
@@ -32,3 +32,8 @@ realtime:
   max_points: 500
 
 outputs: true
+
+dashboard:
+  enable_gif: true
+  gif_fps: 10
+  gif_max_seconds: 60
