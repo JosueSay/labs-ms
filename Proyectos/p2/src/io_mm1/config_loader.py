@@ -38,11 +38,6 @@ DEFAULT_CFG = {
         "draw_interval_ms": 100,
         "max_points": 500,
     },
-    "dashboard": {
-        "enable_gif": True,
-        "gif_fps": 10,
-        "gif_max_seconds": 60,
-    },
     "outputs": True,
 }
 
@@ -119,11 +114,10 @@ def assertInSet(path, value, allowed, errors):
 def validateConfig(cfg):
     errors = []
 
-    # root  ← AQUI AGREGO "dashboard"
     assertKeys(
         "root",
         cfg,
-        required=["project", "model", "model_params", "simulation", "realtime", "dashboard", "outputs"],
+        required=["project", "model", "model_params", "simulation", "realtime", "outputs"],
         allowed=[],
         errors=errors,
         strict=True,
@@ -156,7 +150,7 @@ def validateConfig(cfg):
         strict=True,
     )
     assertType("model.type", model.get("type"), str, errors)
-    assertInSet("model.type", model.get("type"), {"MM1", "MM1_GROUP"}, errors)
+    assertInSet("model.type", model.get("type"), {"MM1"}, errors)
     assertNumber("model.lambda", model.get("lambda"), positive=True, errors=errors)
     assertNumber("model.mu", model.get("mu"), positive=True, errors=errors)
     if isinstance(model.get("lambda"), (int, float)) and isinstance(model.get("mu"), (int, float)):
@@ -229,20 +223,6 @@ def validateConfig(cfg):
         errors.append("realtime.draw_interval_ms: debe ser entero > 0")
     if not isinstance(rt.get("max_points"), int) or rt.get("max_points") <= 0:
         errors.append("realtime.max_points: debe ser entero > 0")
-
-    # dashboard
-    dash = cfg.get("dashboard", {})
-    assertKeys(
-        "dashboard",
-        dash,
-        required=["enable_gif", "gif_fps", "gif_max_seconds"],
-        allowed=[],
-        errors=errors,
-        strict=True,
-    )
-    assertType("dashboard.enable_gif", dash.get("enable_gif"), bool, errors)
-    assertNumber("dashboard.gif_fps", dash.get("gif_fps"), positive=True, errors=errors)
-    assertNumber("dashboard.gif_max_seconds", dash.get("gif_max_seconds"), positive=True, errors=errors)
 
     # outputs
     if "outputs" not in cfg:

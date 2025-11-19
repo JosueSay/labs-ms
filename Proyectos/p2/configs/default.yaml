@@ -24,7 +24,7 @@ simulation:
   sim_time_hours: 24.0
   warmup_minutes: 60
   record_interval_seconds: 1
-  replications: 30
+  replications: 1
 
 realtime:
   wall_clock_speed: 1.0
@@ -32,8 +32,3 @@ realtime:
   max_points: 500
 
 outputs: true
-
-dashboard:
-  enable_gif: true
-  gif_fps: 10
-  gif_max_seconds: 60
