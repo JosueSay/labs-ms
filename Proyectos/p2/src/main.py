@@ -1,5 +1,6 @@
 import argparse
 import copy
+from sim.plots import generateAllFigures
 from io_mm1.config_loader import loadConfig
 from io_mm1.logger import getLogger, logStartRun
 from io_mm1.writers import (
@@ -82,6 +83,14 @@ def main():
 
         if cfg.get("outputs", True):
             saveAllOutputs(cfg_rep, sim_result, summary, logger)
+
+            # ---------------------------------------------
+            # Generar todas las figuras de la simulación
+            # ---------------------------------------------
+            from sim.plots import generateAllFigures
+            generateAllFigures(cfg_rep, show=False)
+
+
 
     logger.info(f"TOTAL DE RÉPLICAS EJECUTADAS: {replications}")
     logger.info("RESUMEN (ÚLTIMA RÉPLICA):")
