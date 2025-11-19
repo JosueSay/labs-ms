@@ -15,6 +15,7 @@ from io_mm1.writers import (
 from utils.rng import getRng
 from core.mm1_model import MM1Model
 from core.metrics import buildSummaryMetrics
+from core.mm1_group_model import MM1GroupModel
 
 
 def parseArgs():
@@ -31,11 +32,19 @@ def deriveReplicationCfg(cfg, rep_idx):
     cfg_rep["rep_prefix"] = f"rep{rep_idx}_"
     return cfg_rep
 
+def buildModel(cfg, rng):
+    # Si el YAML dice que use el modelo extendido
+    if cfg["model"]["type"] == "MM1_GROUP":
+        return MM1GroupModel(cfg["model"], cfg["model_params"], rng)
+    # Si no, usa el modelo original (MM1 normal)
+    return MM1Model(cfg["model"], cfg["model_params"], rng)
+
 
 def runReplication(cfg_rep, seed_offset):
     base_seed = int(cfg_rep["project"]["seed"])
     rng = getRng(base_seed + seed_offset)
-    model = MM1Model(cfg_rep["model"], cfg_rep["model_params"], rng)
+    model = buildModel(cfg_rep, rng)
+
 
     sim_cfg = cfg_rep["simulation"]
     sim_result = model.run(

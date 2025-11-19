@@ -156,7 +156,7 @@ def validateConfig(cfg):
         strict=True,
     )
     assertType("model.type", model.get("type"), str, errors)
-    assertInSet("model.type", model.get("type"), {"MM1"}, errors)
+    assertInSet("model.type", model.get("type"), {"MM1", "MM1_GROUP"}, errors)
     assertNumber("model.lambda", model.get("lambda"), positive=True, errors=errors)
     assertNumber("model.mu", model.get("mu"), positive=True, errors=errors)
     if isinstance(model.get("lambda"), (int, float)) and isinstance(model.get("mu"), (int, float)):

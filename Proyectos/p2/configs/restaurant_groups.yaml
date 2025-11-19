@@ -1,0 +1,39 @@
+project:
+  seed: 98765
+  output_base_data: "data"
+  output_base_results: "results"
+  make_run_dir: true
+  timestamp_fmt: "%Y%m%d_%H%M%S"
+
+model:
+  type: "MM1_GROUP"
+  lambda: 10.0
+  mu: 12.0
+  queue_discipline: "FIFO"
+  capacity_infinite: true
+  patience_infinite: true
+
+model_params:
+  initial_time: 0.0
+  initial_queue: 0
+  server_initial_state: "idle"
+  service_time_if_busy: 0.0
+
+simulation:
+  mode: "batch"
+  sim_time_hours: 8.0
+  warmup_minutes: 30
+  record_interval_seconds: 10
+  replications: 10
+
+realtime:
+  wall_clock_speed: 1.0
+  draw_interval_ms: 100
+  max_points: 500
+
+outputs: true
+
+dashboard:
+  enable_gif: true
+  gif_fps: 10
+  gif_max_seconds: 60
