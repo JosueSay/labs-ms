@@ -1,10 +1,14 @@
 from dataclasses import dataclass
+
+
 @dataclass
 class CustomerRecord:
     customer_id: int
     t_arrival: float
     t_start_service: float = None
     t_end_service: float = None
+
+
 class MM1Model:
     def __init__(self, model_cfg, model_params, rng):
         # parametros modelo
@@ -15,7 +19,8 @@ class MM1Model:
         self.patience_infinite = bool(model_cfg["patience_infinite"])
 
         # estado inicial
-        self.sim_time = float(model_params["initial_time"])
+        self.initial_time = float(model_params["initial_time"])
+        self.sim_time = self.initial_time
         self.queue = []  # guarda customer_id en orden FIFO
         self.server_state = model_params["server_initial_state"]
         self.remaining_service_if_busy = float(model_params["service_time_if_busy"]) / 60.0  # minutos -> horas
@@ -44,18 +49,26 @@ class MM1Model:
         self.last_state_change_time = self.sim_time
         self.busy_time_accum = 0.0
 
+        # control de muestreo para modo paso a paso / batch
+        self.record_interval_h = None
+        self.next_sample_time_h = None
+        self.series_initialized = False
+
     def sampleInterarrival(self):
         # interarribo ~ exponencial(1/λ) en horas
         return self.rng.exponential(1.0 / self.lambda_rate)
+
 
     def sampleService(self):
         # servicio ~ exponencial(1/μ) en horas
         return self.rng.exponential(1.0 / self.mu_rate)
 
+
     def nextCustomerId(self):
         # genera id incremental
         self.customer_seq += 1
         return self.customer_seq
+
 
     def logEvent(self, event_type, customer_id=None):
         self.raw_events.append({
@@ -66,6 +79,7 @@ class MM1Model:
             "server_state": self.server_state,
         })
 
+
     def updateBusyAccumulator(self, new_time):
         # acumula tiempo ocupado desde el último cambio de estado
         elapsed = new_time - self.last_state_change_time
@@ -73,6 +87,7 @@ class MM1Model:
             if self.server_state == "busy":
                 self.busy_time_accum += elapsed
             self.last_state_change_time = new_time
+
 
     def startServiceIfPossible(self):
         # si servidor idle y hay cola, iniciar servicio al siguiente
@@ -85,6 +100,7 @@ class MM1Model:
             self.server_state = "busy"
             self.next_departure_time = self.sim_time + service_time
             self.logEvent("service_start", cust_id)
+
 
     def processArrival(self):
         # llega un cliente nuevo
@@ -101,6 +117,7 @@ class MM1Model:
         # agenda siguiente llegada
         self.next_arrival_time = self.sim_time + self.sampleInterarrival()
 
+
     def startServiceImmediate(self, cust_id):
         # iniciar servicio al cliente cust_id en el instante actual
         rec = self.customers[cust_id]
@@ -110,6 +127,7 @@ class MM1Model:
         self.server_state = "busy"
         self.next_departure_time = self.sim_time + service_time
         self.logEvent("service_start", cust_id)
+
 
     def processDeparture(self):
         # termina servicio del cliente actual
@@ -146,6 +164,7 @@ class MM1Model:
             self.server_state = "idle"
             self.next_departure_time = None
 
+
     def findCurrentInService(self):
         # encuentra el cliente con start_service definido pero sin end_service, más reciente
         candidate = None
@@ -157,74 +176,107 @@ class MM1Model:
                     candidate = rec.customer_id
         return candidate
 
-    def sampleSeriesIfNeeded(self, next_sample_time_h, collect_series):
-        # si collect_series, guarda Lq y rho al alcanzar el siguiente punto de muestreo
+
+    def initRecording(self, record_interval_seconds, collect_series):
+        # inicializa parámetros de muestreo si hace falta
         if not collect_series:
-            return False
-        if self.sim_time >= next_sample_time_h:
-            rho_inst = 1.0 if self.server_state == "busy" else 0.0
-            self.series_queue_len.append({"timestamp_sim": self.sim_time, "Lq": len(self.queue)})
-            self.series_utilization.append({"timestamp_sim": self.sim_time, "rho_instant": rho_inst})
-            return True
-        return False
+            return
 
-    def run(self, sim_time_hours, warmup_minutes=0, record_interval_seconds=10, collect_series=True):
-        # convierte intervalos a horas
         record_interval_h = max(1e-9, float(record_interval_seconds) / 3600.0)
-        warmup_h = max(0.0, float(warmup_minutes) / 60.0)
-        end_time = self.sim_time + float(sim_time_hours)
+        self.record_interval_h = record_interval_h
 
-        # marcar tiempo de inicio para promedio de utilización
-        run_start_time = self.sim_time
-
-        # inicializa muestreo de series
-        next_sample_time_h = self.sim_time
-
-        # muestreo inicial (t0)
-        if collect_series:
+        if not self.series_initialized:
             self.series_queue_len.append({"timestamp_sim": self.sim_time, "Lq": len(self.queue)})
             rho_inst = 1.0 if self.server_state == "busy" else 0.0
             self.series_utilization.append({"timestamp_sim": self.sim_time, "rho_instant": rho_inst})
-            next_sample_time_h += record_interval_h
+            self.next_sample_time_h = self.sim_time + self.record_interval_h
+            self.series_initialized = True
 
-        # bucle principal de eventos controlado por bandera
+
+    def sampleSeriesIfNeeded(self, collect_series):
+        # si collect_series, guarda muestras Lq y rho cada record_interval_h
+        if not collect_series:
+            return
+        if self.record_interval_h is None or not self.series_initialized:
+            return
+
+        while self.sim_time >= self.next_sample_time_h:
+            rho_inst = 1.0 if self.server_state == "busy" else 0.0
+            self.series_queue_len.append({"timestamp_sim": self.sim_time, "Lq": len(self.queue)})
+            self.series_utilization.append({"timestamp_sim": self.sim_time, "rho_instant": rho_inst})
+            self.next_sample_time_h += self.record_interval_h
+
+
+    def getNextEvent(self):
+        # devuelve (tipo, tiempo) del próximo evento o (None, None) si no hay
+        candidates = []
+        if self.next_arrival_time is not None:
+            candidates.append(("arrival", self.next_arrival_time))
+        if self.next_departure_time is not None:
+            candidates.append(("departure", self.next_departure_time))
+        if not candidates:
+            return None, None
+        return min(candidates, key=lambda x: x[1])
+
+
+    def stepNextEvent(self, collect_series=True, record_interval_seconds=10):
+        # procesa un solo evento (arrival/departure) y avanza el tiempo hasta ese evento
+        # devuelve info básica del evento y estado, o None si no hay eventos
+        if collect_series and self.record_interval_h is None:
+            self.initRecording(record_interval_seconds, collect_series)
+
+        event_type, event_time = self.getNextEvent()
+        if event_type is None:
+            return None
+
+        # avanzar tiempo y acumular ocupación
+        self.updateBusyAccumulator(event_time)
+        self.sim_time = event_time
+
+        # muestreo de series en el nuevo tiempo
+        self.sampleSeriesIfNeeded(collect_series)
+
+        # procesar evento
+        if event_type == "arrival":
+            self.processArrival()
+        elif event_type == "departure":
+            self.processDeparture()
+
+        return {
+            "event_type": event_type,
+            "event_time": event_time,
+            "state": self.getStateSnapshot(),
+        }
+
+
+    def simulateUntil(self, end_time, warmup_minutes=0, record_interval_seconds=10, collect_series=True):
+        # avanza la simulación hasta end_time (en horas)
+        warmup_h = max(0.0, float(warmup_minutes) / 60.0)
+        run_start_time = self.sim_time
+        busy_accum_before = self.busy_time_accum
+
+        if collect_series:
+            self.initRecording(record_interval_seconds, collect_series)
+
         keep_running = True
+
         while keep_running:
-            # determinar próximo evento
-            candidates = []
-            if self.next_arrival_time is not None:
-                candidates.append(("arrival", self.next_arrival_time))
-            if self.next_departure_time is not None:
-                candidates.append(("departure", self.next_departure_time))
+            event_type, event_time = self.getNextEvent()
 
-            # si no hay eventos, cortar
-            if not candidates:
+            # no hay eventos o el siguiente evento excede el fin
+            if event_type is None or event_time > end_time:
                 self.updateBusyAccumulator(end_time)
                 self.sim_time = end_time
-                while self.sampleSeriesIfNeeded(next_sample_time_h, collect_series):
-                    next_sample_time_h += record_interval_h
-                break
+                self.sampleSeriesIfNeeded(collect_series)
+                keep_running = False
+                continue
 
-            event_type, event_time = min(candidates, key=lambda x: x[1])
-
-            if event_time > end_time:
-                # avanzar acumuladores hasta fin y salir
-                self.updateBusyAccumulator(end_time)
-                self.sim_time = end_time
-                while self.sampleSeriesIfNeeded(next_sample_time_h, collect_series):
-                    next_sample_time_h += record_interval_h
-                break
-
-            # avanzar tiempo y acumular ocupación
+            # avanzar al tiempo del evento
             self.updateBusyAccumulator(event_time)
             self.sim_time = event_time
 
-            # muestreo de series si pasamos el umbral
-            sampled = True
-            while sampled:
-                sampled = self.sampleSeriesIfNeeded(next_sample_time_h, collect_series)
-                if sampled:
-                    next_sample_time_h += record_interval_h
+            # muestreo de series
+            self.sampleSeriesIfNeeded(collect_series)
 
             # procesar evento
             if event_type == "arrival":
@@ -232,13 +284,12 @@ class MM1Model:
             elif event_type == "departure":
                 self.processDeparture()
 
-            # condición de corte -> si ambos eventos están vacíos tras procesar y ya alcanzamos el final
-            no_more_events = (self.next_arrival_time is None and self.next_departure_time is None)
-            keep_running = not no_more_events
+            # el bucle continúa hasta que encontremos un break natural arriba
 
-        # calcular rho promedio a partir de tiempo ocupado / duración total de simulación del run
+        # calcular rho promedio en el intervalo de la corrida
         total_duration = max(1e-12, self.sim_time - run_start_time)
-        rho_avg = min(1.0, max(0.0, self.busy_time_accum / total_duration))
+        busy_during_run = max(0.0, self.busy_time_accum - busy_accum_before)
+        rho_avg = min(1.0, max(0.0, busy_during_run / total_duration))
 
         result = {
             "raw_events": self.raw_events,
@@ -251,3 +302,35 @@ class MM1Model:
             "warmup_hours": warmup_h,
         }
         return result
+
+
+    def getStateSnapshot(self):
+        # devuelve un snapshot ligero del estado actual
+        queue_length = len(self.queue)
+        completed = len(self.queue_times)
+        if self.sim_time > self.initial_time:
+            rho_avg = self.busy_time_accum / max(1e-12, self.sim_time - self.initial_time)
+        else:
+            rho_avg = None
+
+        return {
+            "sim_time": self.sim_time,
+            "queue_length": queue_length,
+            "server_state": self.server_state,
+            "next_arrival_time": self.next_arrival_time,
+            "next_departure_time": self.next_departure_time,
+            "n_customers_created": self.customer_seq,
+            "n_customers_completed": completed,
+            "rho_avg_so_far": rho_avg,
+        }
+
+
+    def run(self, sim_time_hours, warmup_minutes=0, record_interval_seconds=10, collect_series=True):
+        # wrapper batch clásico que mantiene la api original
+        end_time = self.sim_time + float(sim_time_hours)
+        return self.simulateUntil(
+            end_time=end_time,
+            warmup_minutes=warmup_minutes,
+            record_interval_seconds=record_interval_seconds,
+            collect_series=collect_series,
+        )
