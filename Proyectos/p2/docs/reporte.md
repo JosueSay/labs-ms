@@ -1,6 +1,6 @@
 # Proyecto 2
 
-Este proyecto implementa un sistema completo para simular colas M/M/1 aplicado a un restaurante.
+Este proyecto implementa un sistema para simular colas M/M/1 aplicado a un restaurante.
 
 ## Integrantes
 
