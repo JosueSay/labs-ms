@@ -1,6 +1,6 @@
-# Proyecto 1
+# Proyecto 2
 
-Este proyecto tiene como objetivo diseñar e implementar un algoritmo genético para resolver un problema TSP y compararlo con una solución de programación lineal.
+Este proyecto implementa un sistema completo para simular colas M/M/1 aplicado a un restaurante.
 
 ## Integrantes
 
