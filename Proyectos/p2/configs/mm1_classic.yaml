@@ -1,5 +1,5 @@
 project:
-  seed: 98765
+  seed: 123
   output_base_data: "data"
   output_base_results: "results"
   make_run_dir: true
@@ -24,7 +24,7 @@ simulation:
   sim_time_hours: 8.0
   warmup_minutes: 30
   record_interval_seconds: 10
-  replications: 10
+  replications: 1
 
 realtime:
   wall_clock_speed: 1.0
@@ -32,5 +32,3 @@ realtime:
   max_points: 500
 
 outputs: true
-
-

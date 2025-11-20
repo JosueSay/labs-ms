@@ -33,10 +33,19 @@ def deriveReplicationCfg(cfg, rep_idx):
     return cfg_rep
 
 def buildModel(cfg, rng):
-    # Si el YAML dice que use el modelo extendido
-    if cfg["model"]["type"] == "MM1_GROUP":
+    """
+    Selecciona el modelo a usar.
+    - Si el YAML es restaurant_groups.yaml → usar MM1GroupModel
+    - Si no → usar MM1 normal
+    """
+
+    # Detectar si el archivo de origen contiene la palabra 'group'
+    source = cfg.get("source_config_path", "").lower()
+
+    if "group" in source:
         return MM1GroupModel(cfg["model"], cfg["model_params"], rng)
-    # Si no, usa el modelo original (MM1 normal)
+
+    # Caso normal
     return MM1Model(cfg["model"], cfg["model_params"], rng)
 
 
