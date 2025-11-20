@@ -24,10 +24,15 @@ Este proyecto tiene como objetivo diseñar e implementar un algoritmo genético 
 - [Modelo Aplicado a un Restaurante](#modelo-mm1-aplicado-a-un-restaurante)
   - [Gráficas y Métricas](#gráficas-y-métricas)
 - [Arquitectura del Sistema](#arquitectura-del-sistema)
-- [Configuración de Parámetros del Modelo](#configuración-de-parámetros-del-modelo)
-- [Interfaz Dashboard](#interfaz-y-controles)
+  - [Configuración de Parámetros del Modelo](#configuración-de-parámetros-del-modelo)
 - [Simulación](#simulación)
   - [Uso de Streamlit y PyGame](#uso-de-streamlit-y-pygame)
+  - [Interfaz Dashboard](#interfaz-y-controles)
+  - [Módulo de Análisis y Generaión de Reportes](#módulo-de-análisis-y-generación-de-reportes)
+- [Gráficas y Métrics Obtenidas](#gráficas-y-métricas-obtenidas)
+- [Discusión de Resultados](#discusión-de-resultados)
+- [Conclusiones](#conclusiones)
+- [Referencias](#referencias)
 
 ## Introducción
 
@@ -235,12 +240,12 @@ Los archivos y módulos relevantes son:
 - **Interfaces de usuario**
   Streamlit y Pygame se apoyan en el mismo controlador y solo cambian la forma de mostrar el estado de la simulación.
 
-## Configuración de Parámetros del Modelo
+### Configuración de Parámetros del Modelo
 
 Cada simulación del sistema de colas $M/M/1$ se define a través de un archivo de configuración YAML dentro del directorio `configs/`.
 Este archivo permite controlar el comportamiento del modelo, los parámetros de simulación, la salida de datos y la visualización en tiempo real **sin modificar el código fuente**.
 
-### Estructura general
+#### Estructura general
 
 ```yaml
 project:
@@ -279,91 +284,63 @@ realtime:
 outputs: true
 ```
 
-### **1. Sección `project`**
+#### **1. Sección `project`**
 
 Define aspectos globales de la ejecución, como rutas de salida, control de aleatoriedad y formato de nombres.
 
-| Parámetro             | Tipo     | Descripción                                                              | Valores posibles / relación                                   |
-| --------------------- | -------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `seed`                | entero   | Semilla aleatoria para garantizar reproducibilidad entre ejecuciones.    | Cualquier número entero.                                      |
-| `output_base_data`    | cadena   | Carpeta donde se guardan los datos crudos (`data/`).                     | Ruta relativa. No debe terminar en `/`.                       |
-| `output_base_results` | cadena   | Carpeta base para los resultados procesados y figuras (`results/`).      | Ruta relativa.                                                |
-| `make_run_dir`        | booleano | Si es `true`, crea una subcarpeta `runs_<timestamp>` por cada ejecución. | `true` / `false`                                              |
-| `timestamp_fmt`       | cadena   | Formato del sello temporal para nombres de carpetas.                     | Formato compatible con `strftime` (p. ej. `"%Y%m%d_%H%M%S"`). |
+![Sección 1](../images/tablas/c1.png)
 
 **Relaciones:**
 
 - `make_run_dir: true` crea directorios dentro de `output_base_data` y `output_base_results` usando el formato definido en `timestamp_fmt`.
 
-### **2. Sección `model`**
+#### **2. Sección `model`**
 
 Define el tipo de modelo de colas y sus parámetros fundamentales.
 Esta sección traduce directamente los parámetros teóricos $\lambda$ (tasa de llegada) y $\mu$ (tasa de servicio).
 
-| Parámetro           | Tipo     | Descripción                                                  | Valores posibles / relación                         |
-| ------------------- | -------- | ------------------------------------------------------------ | --------------------------------------------------- |
-| `type`              | cadena   | Tipo de modelo de colas a simular.                           | `"MM1"` (por ahora fijo).                           |
-| `lambda`            | número   | Tasa promedio de llegadas (clientes por hora).               | > 0                                                 |
-| `mu`                | número   | Tasa promedio de servicio (clientes atendidos por hora).     | > 0, debe cumplir $\lambda < \mu$ para estabilidad. |
-| `queue_discipline`  | cadena   | Regla de atención de clientes.                               | `"FIFO"` (actualmente único modo implementado).     |
-| `capacity_infinite` | booleano | Si es `true`, la cola no tiene límite de clientes esperando. | `true` / `false`                                    |
-| `patience_infinite` | booleano | Si es `true`, los clientes nunca abandonan la cola.          | `true` / `false`                                    |
+![Sección 2](../images/tablas/c2.png)
 
 **Relaciones:**
 
 - La estabilidad del sistema requiere que $\lambda < \mu$.
 - Si `capacity_infinite` o `patience_infinite` se establecen en `false`, deben existir parámetros adicionales en el futuro (no usados aún).
 
-### **3. Sección `model_params`**
+#### **3. Sección `model_params`**
 
 Permite definir condiciones iniciales del sistema antes de iniciar la simulación.
 Esto facilita controlar el estado del servidor y la cola al comienzo del reloj de simulación.
 
-| Parámetro              | Tipo   | Descripción                                                               | Valores posibles / relación |
-| ---------------------- | ------ | ------------------------------------------------------------------------- | --------------------------- |
-| `initial_time`         | número | Tiempo inicial del reloj de simulación (en horas).                        | Normalmente `0.0`.          |
-| `initial_queue`        | entero | Número de clientes esperando al inicio.                                   | ≥ 0                         |
-| `server_initial_state` | cadena | Estado inicial del servidor.                                              | `"idle"` o `"busy"`.        |
-| `service_time_if_busy` | número | Si el servidor empieza ocupado, tiempo restante de servicio (en minutos). | ≥ 0                         |
+![Sección 3](../images/tablas/c3.png)
 
 **Relaciones:**
 
 - Si `server_initial_state: "idle"`, el valor de `service_time_if_busy` se ignora.
 - Si `server_initial_state: "busy"`, el primer evento de salida ocurre tras `service_time_if_busy`.
 
-### **4. Sección `simulation`**
+#### **4. Sección `simulation`**
 
 Controla el comportamiento general de la simulación: duración, modo de ejecución, frecuencia de registro y repeticiones.
 
-| Parámetro                 | Tipo   | Descripción                                                                                   | Valores posibles / relación |
-| ------------------------- | ------ | --------------------------------------------------------------------------------------------- | --------------------------- |
-| `mode`                    | cadena | Define si la simulación se ejecuta en bloque o en tiempo real.                                | `"batch"` o `"realtime"`.   |
-| `sim_time_hours`          | número | Duración total de la simulación (horas simuladas).                                            | > 0                         |
-| `warmup_minutes`          | número | Periodo inicial cuyos datos no se usan en métricas agregadas (fase de estabilización).        | ≥ 0                         |
-| `record_interval_seconds` | número | Intervalo de registro de métricas instantáneas ($L_q(t)$, $\rho(t)$).                         | > 0                         |
-| `replications`            | entero | Número de veces que se repite la simulación con los mismos parámetros para obtener promedios. | ≥ 1                         |
+![Sección 4](../images/tablas/c4.png)
 
 **Relaciones:**
 
 - Si `mode: "realtime"`, los parámetros de `realtime` también deben estar definidos (sección siguiente).
 - `record_interval_seconds` determina la resolución temporal de los CSV de series.
 
-### **5. Sección `realtime`**
+#### **5. Sección `realtime`**
 
 Configura el comportamiento visual e interactivo de la simulación en tiempo real.
 
-| Parámetro          | Tipo   | Descripción                                                                                   | Valores posibles / relación |
-| ------------------ | ------ | --------------------------------------------------------------------------------------------- | --------------------------- |
-| `wall_clock_speed` | número | Factor de velocidad respecto al tiempo real. `1.0` = tiempo real, `>1` acelera la simulación. | ≥ 0                         |
-| `draw_interval_ms` | entero | Tiempo (en milisegundos) entre actualizaciones gráficas de la vista.                          | > 0                         |
-| `max_points`       | entero | Número máximo de puntos o entidades a mostrar en la animación (limita memoria).               | > 0                         |
+![Sección 5](../images/tablas/c5.png)
 
 **Relaciones:**
 
 - Solo aplican cuando `simulation.mode = "realtime"`.
 - No afectan los resultados numéricos, solo la representación visual.
 
-### **6. Parámetro `outputs`**
+#### **6. Parámetro `outputs`**
 
 Controla si la simulación genera archivos de salida.
 Cuando está activado, el programa produce:
@@ -373,33 +350,7 @@ Cuando está activado, el programa produce:
 - Reporte resumido (Markdown).
 - Configuración efectiva (`config_effective.yaml`).
 
-| Parámetro | Tipo     | Descripción                                                  | Valores posibles                                 |
-| --------- | -------- | ------------------------------------------------------------ | ------------------------------------------------ |
-| `outputs` | booleano | Habilita o desactiva la exportación de todos los resultados. | `true` (exporta todo) / `false` (no guarda nada) |
-
-## Interfaz y Controles
-
-La interfaz principal en Streamlit expone el modelo M/M/1:
-
-- **Sliders para parámetros**
-
-  El usuario ajusta $\lambda$ y $\mu$ en el panel lateral. El sistema muestra una advertencia cuando $\mu \le \lambda$ para recordar la condición de estabilidad.
-
-- **Control de duración y velocidad**
-
-  Otro control define las horas a simular y un factor de velocidad que convierte segundos reales en horas simuladas. Con velocidad cero la corrida queda pausada.
-
-- **Botones de ejecución**
-
-  Los botones Iniciar, Pausa Reanudar y Reiniciar controlan el ciclo de vida de la corrida y actualizan una bandera interna que indica si hay una simulación en curso.
-
-- **Acciones adicionales**
-
-  Un botón dispara la generación de archivos y gráficas para el informe y otro abre la vista animada en Pygame.
-
-- **Panel de indicadores**
-
-  En la parte central se muestran métricas en vivo tiempo simulado, longitud de cola, clientes creados y atendidos y utilización promedio estimada.
+![Sección 6](../images/tablas/c6.png)
 
 ## Simulación
 
@@ -429,13 +380,269 @@ Ambas vistas comparten el mismo controlador, por lo que observan exactamente la 
 - Usa `tickWithDelta` para avanzar el modelo con pasos pequeños de tiempo simulado y dibuja en pantalla la cola, el servidor y el flujo de clientes.
 - Es ideal para explicar de manera intuitiva fenómenos como picos de cola, periodos de saturación o el impacto de cambiar $\lambda$ y $\mu$ en tiempo real.
 
-## Módulo de análisis y generación de reportes
+### Interfaz y Controles
 
-## Gráficas y métricas obtenidas
+La interfaz principal en Streamlit expone el modelo M/M/1:
 
-## Discusión de resultados
+- **Sliders para parámetros**
+
+  El usuario ajusta $\lambda$ y $\mu$ en el panel lateral. El sistema muestra una advertencia cuando $\mu \le \lambda$ para recordar la condición de estabilidad.
+
+- **Control de duración y velocidad**
+
+  Otro control define las horas a simular y un factor de velocidad que convierte segundos reales en horas simuladas. Con velocidad cero la corrida queda pausada.
+
+- **Botones de ejecución**
+
+  Los botones Iniciar, Pausa Reanudar y Reiniciar controlan el ciclo de vida de la corrida y actualizan una bandera interna que indica si hay una simulación en curso.
+
+- **Acciones adicionales**
+
+  Un botón dispara la generación de archivos y gráficas para el informe y otro abre la vista animada en Pygame.
+
+- **Panel de indicadores**
+
+  En la parte central se muestran métricas en vivo tiempo simulado, longitud de cola, clientes creados y atendidos y utilización promedio estimada.
+
+### Módulo de Análisis y Generación de Reportes
+
+El sistema genera reportes a partir de la ejecución completa de la simulación. En cada corrida se producen:
+
+- CSV con series temporales
+
+  - Longitud de cola $L_q$
+  - Utilización instantánea $\rho$
+  - Eventos de llegada y salida
+  - Tiempos individuales por cliente: espera, servicio y permanencia
+
+- CSV de métricas agregadas
+  Resultado final de:
+  $$\rho,\ L,\ L_q,\ W,\ W_q$$
+
+- Gráficas automáticas
+  Curvas de ocupación, histograma de cola, ECDF de tiempos, densidad llegada–tiempo en sistema, clientes servidos y comparación teoría–simulación.
+
+- Reporte resumen
+  Documento que integra métricas y visualizaciones para interpretar el comportamiento operativo del modelo.
+
+## Gráficas y Métricas Obtenidas
+
+El sistema produce un conjunto completo de visualizaciones que describen el comportamiento temporal y estadístico del modelo M/M/1. A continuación se presentan y explican cada una de las gráficas obtenidas con la configuración de referencia.
+
+### Evolución temporal de la cola ($L_q(t)$)
+
+![Evolución de la cola](../images/default/queue_length_evolution.png)
+
+La serie muestra los valores crudos de $L_q(t)$ junto con una versión suavizada. Refleja periodos de baja demanda y picos ocasionales cuando llegan múltiples clientes en intervalos cortos. La variabilidad es consistente con procesos Poisson.
+
+### Cola con bloques de ocupación
+
+![Lq con bandas](../images/default/queue_and_busy_bands.png)
+
+La gráfica superpone intervalos donde el servidor estuvo ocupado. Las regiones sombreadas muestran de forma visual cómo los picos en $L_q$ coinciden con periodos prolongados de servicio continuo, típicos de cargas cercanas a $\rho \approx 0.8$.
+
+### Histograma de $L_q$
+
+![Histograma Lq](../images/default/queue_length_hist.png)
+
+El histograma confirma que la mayor parte del tiempo la cola estuvo entre $0$ y $2$ clientes. La distribución decae rápidamente, lo cual coincide con la teoría para $\lambda < \mu$.
+
+### Ocupación del servidor ($\rho(t)$)
+
+![Server utilization](../images/default/server_utilization.png)
+
+Las barras representan la ocupación promedio por intervalo, mientras que la curva punteada muestra la ocupación acumulada:
+
+- El sistema converge hacia $\rho \approx \frac{10}{12} \approx 0.83$.
+- Se observan corto períodos de alta ocupación donde el servidor opera casi al límite.
+
+### ECDF de tiempos
+
+![ECDF](../images/default/times_ecdf.png)
+
+La ECDF presenta la distribución de tres métricas:
+
+- **$W_q$ (espera)**, curva verde: la mayoría de clientes espera menos de $0.15$ horas.
+- **Tiempo de servicio**, curva naranja: distribuido exponencialmente alrededor de $1/\mu$.
+- **Tiempo en sistema $W$**, curva azul: combina ambas, como exige $W = W_q + 1/\mu$.
+
+Este gráfico es esencial para caracterizar la experiencia del cliente.
+
+### Llegada vs. tiempo en sistema (Hexbin)
+
+![Hexbin](../images/default/arrival_vs_system_hexbin.png)
+
+Permite relacionar momentos de mayor actividad con tiempos más largos en el sistema. Los hexágonos más densos indican horas donde la cola temporalmente aumentó, generando tiempos en sistema más altos.
+
+### Clientes atendidos acumulados
+
+![Cumulative served](../images/default/cumulative_served.png)
+
+La pendiente estable indica un ritmo de servicio consistente gracias a $\mu = 12$. La falta de escalones grandes expresa que no se acumuló un backlog significativo.
+
+### Eventos acumulados
+
+![Eventos acumulados](../images/default/events_cumulative.png)
+
+Muestra el conteo acumulado de:
+
+- Llegadas
+- Inicios de servicio
+- Finales de servicio
+
+Las tres curvas son casi paralelas, indicando balance entre oferta ($\mu$) y demanda ($\lambda$) y una operación estable.
+
+### Comparación teoría vs. simulación
+
+![Theory vs simulation](../images/default/theory_vs_sim_bars.png)
+
+Contrasta los valores teóricos de:
+
+$$\rho,\ L,\ L_q,\ W,\ W_q$$
+
+contra los obtenidos en la simulación. Se observa:
+
+- Subestimación leve en $L$ y $L_q$ (común en simulaciones de duración finita).
+- Buena aproximación en $\rho$ y $W$.
+- Ajuste correcto considerando el warm-up y el tamaño de muestra.
+
+### Analisis de Eficiencia de Modelos
+
+Se compararon ambos modelos por medio la evaluación eficiencia operativa, precisión teórica, congestión y experiencia del cliente.
+
+![Tablas de metricas de modelos](../images/modelos.png)
+
+#### Metricas clave
+
+**Simulación vs. Teoría**
+
+| Metrica | Clasico (Teoría / Simulación) | Grupos (Teoría / Simulación) |
+| ----------- | ----------- | ----------- |
+| $\rho$  | 0.833 / 0.758 | 0.833 / 0.893 |
+| L | 5.00 / 2.13 | 5.00 / 2.92 |
+| Lq | 4.17 / 1.38| 4.17 / 2.02 |
+| W | 0.50 / 0.223 | 0.50 / 0.289 |
+| Wq | 5.00 / 2.13 | 0.417 / 0.202 |
+
+**% de Error**
+
+| Metrica | Clasico| Grupos|
+| ----------- | ----------- | ----------- |
+| $\rho$  | -9.07% | +7.22% |
+| L | -57.33% | -41.70% |
+| Lq | -66.97% | -51.50% |
+| W | -55.41% | -42.15% |
+| Wq | -65.25% | -65.25% |
+
+El modelo clasico tiene un uso moderado y el de grupos es de uso alto con riesgo a congestión sin embargo podemos ver un aumento en el modelo de grupos de un 7.22%, indicando que este modelo está operando más cerca del máximo de su capacidad esto reflejado en el aumento de congestión pero a cambio aumenta la productividad.
+Al haber una menor carga en el modelo clásico se obtiene una atención mas fluída pero en el modelo de grupos hay más clientes simultáneos con su aumento respectivo en la carga, ambos modelos tienen una cantidad menor de clientes que la teoría el modelo de grupos mantiene más clientes en cola esto reflejando la atención a varios clientes a la vez (grupos).
+
+El modelo clásico tiene una baja congestión, reflejado en su espera reducida mientras que el de grupos tiene una acumulación mayor en la cola por lo que hay más clientes esperando sin embargo, de nuevo, esto se compensa al atender varios clientes a la vez por medio de grupos.
+El tiempo promedio en el sistema es más corto en el modelo clásico indicando una atención máxima y con eso una permanencia menor, por otro lado tenemos el modelo de grupos que tiene una mayr permanencia indicando un agrupamiento, esto indica que el modelo clásico es más agil por cliente. El tiempo promedio de espera en cola indica una mejor experiencia individual para cada cliente al tener una espera mínima, mientras que el modelo de grupos tiene un tiempo de espera mayor por cada cliente (compensado al atender a los clientes en bloques).
+
+#### Metricas de operacion
+
+**Indice de ajuste promedio**
+
+| Metrica | Clasico| Grupos|
+| ----------- | ----------- | ----------- |
+| ρ | 0.91 | 0.93 |
+| L | 0.43 | 0.6 |
+| Lq | 0.33 | 0.5 |
+| W | 0.45 | 0.6 |
+| Wq | 0.35 | 0.5 |
+| ----------- | ----------- | ----------- |
+| Promedio | 0.5 | 0.63 |
+
+Podemos ver que el modelo de grupos es más preciso que el modelo clásico, haciendo que este modelo sea más confiable como simulación que el modelo clásico.
+
+**Otras metricas**
+
+| Metrica | Clasico| Grupos|
+| ----------- | ----------- | ----------- |
+| Eficiencia (clientes/hr)  | 9.67 | 9.88 |
+| Tiempo de servicio (total) | 0.078 hr | 0.088 hr |
+| Congestion relativa (L/Lq) | 0.645 | 1.429 |
+
+La eficicencia de ambos modelos es bastante cercana con el modelo de grupos tomando el primer lugar, este modelo a pesar de tener una mayor congestión atiene más clientes por hora al hacer uso de la atención grupal de clientes.
+El promedio de tiempo de servicio indica que el modelo de grupos dedica más tiempo al servicio por cliente, reflejando un proceso de atención más lento, pero compensado al atender en grupos.
+La congestión relativa indica que en el modelo clásico tiene una atención más fluida, reflejado en que hay una menor cantidad de clientes esperando en cola. El modelo de grupos tiene más clientes en espera, mientras esperan a ser atentidos en grupo.
+
+## Discusión de Resultados
+
+Los resultados comparan dos enfoques: el modelo clásico M/M/1 y un modelo con atención grupal. Aunque la implementación principal corresponde al modelo clásico, la comparación muestra cómo la estructura de atención modifica el comportamiento general del sistema.
+
+### Efecto de los parámetros $\lambda$ y $\mu$
+
+Los parámetros clave del sistema son:
+
+- $\lambda$: tasa de llegada de clientes por hora
+- $\mu$: tasa de servicio, capacidad del servidor por hora
+
+La relación entre ambos determina la ocupación:
+
+$$\rho = \frac{\lambda}{\mu}$$
+
+### Implicaciones al variar $\lambda$
+
+- Si $\lambda$ aumenta y $\mu$ permanece constante:
+
+  - $\rho$ crece rápidamente.
+  - $L$ y $L_q$ aumentan de manera no lineal.
+  - $W$ y $W_q$ se incrementan de forma drástica.
+  - El sistema se vuelve inestable cuando $\lambda \to \mu$.
+
+- Si $\lambda$ disminuye:
+
+  - Disminuye la congestión.
+  - Se reducen $L_q$ y los tiempos de espera.
+  - El sistema se vuelve más fluido.
+
+### Implicaciones al variar $\mu$
+
+- Si $\mu$ aumenta:
+
+  - $\rho$ disminuye.
+  - Menos clientes en cola.
+  - Reducciones claras en $W$ y $W_q$.
+  - El sistema opera más cerca del ideal.
+
+- Si $\mu$ disminuye:
+
+  - Incremento fuerte en congestión.
+  - $L_q$ y $W_q$ crecen rápidamente.
+  - Alta probabilidad de saturación.
+
+### Cuando $\lambda$ y $\mu$ son similares
+
+- El sistema opera cerca del límite de su capacidad.
+- Variaciones pequeñas en demanda generan aumentos significativos en tiempos de espera.
+- Según la teoría, basta un aumento leve en $\lambda$ para que $W$ y $W_q$ crezcan abruptamente.
+
+### Comparación entre modelos
+
+El modelo clásico presenta:
+
+- Menor congestión
+- Menor tiempo de permanencia por cliente
+- Mejor experiencia individual
+
+El modelo de grupos presenta:
+
+- Mayor productividad total
+- Mayor utilización del servidor ($\rho \approx 0.89$)
+- Más congestión individual
+- Índice de ajuste promedio superior (0.63 frente a 0.50)
+
+Aunque genera más congestión, el modelo de grupos procesa más clientes al permitir atención simultánea.
 
 ## Conclusiones
+
+- El modelo M/M/1 implementado permite entender el impacto directo de los parámetros $\lambda$ y $\mu$ sobre el rendimiento del sistema.
+- La ocupación $\rho$ es la medida fundamental, ya que determina estabilidad y congestión.
+- Cambios pequeños en $\lambda$ o $\mu$ pueden generar variaciones grandes en $L_q$ y $W_q$, lo que evidencia la sensibilidad del sistema.
+- El modelo clásico ofrece fluidez y tiempos más bajos por cliente, mientras que el modelo de grupos incrementa la productividad total a costa de mayor congestión.
+- La simulación reproduce con fidelidad los comportamientos teóricos, validando la implementación del motor de eventos discreto.
 
 ## Referencias
 
